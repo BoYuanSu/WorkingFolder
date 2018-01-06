@@ -40,7 +40,7 @@ class Run:
         formatter2 = logging.Formatter("%(message)s")
 
         file_handler = logging.FileHandler(r".\testModel\TimeLog.log")
-        file_handler.setLevel(logging.DEBUG)
+        file_handler.setLevel(logging.INFO)
         file_handler.setFormatter(formatter)
 
         stream_handler = logging.StreamHandler()
@@ -53,6 +53,7 @@ class Run:
     @staticmethod
     def closeLoggerFilehdlr():
         print "close logger handlers"
+
         for name, obj in globals().items():
             if isinstance(obj, types.ModuleType):
                 try:
@@ -63,19 +64,22 @@ class Run:
 
         for hdlr in logger.handlers:
             hdlr.close()
+        with open(r".\testModel\TimeLog.log", "a") as log:
+            log.write("{0} End log {0}\n".format("=" * 50))
 
 
 if __name__ == "__main__":
+
     timerecord = sharedlib.Timer()
+
+    logger = Run.createLoggerFilehdlr()
+    timerecord.addTimeStamp("Creatlogger")
 
     if iTestMode == 0:
         processes = sharedlib.ProcessSnapShot()
 
     sharedlib.ProcessSnapShot()
     timerecord.addTimeStamp("ProcessSnapShot")
-
-    logger = Run.createLoggerFilehdlr()
-    timerecord.addTimeStamp("Creatlogger")
 
     print "=" * 100
     main()

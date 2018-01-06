@@ -13,17 +13,16 @@ import TestFile_BackUp as backuptool
 class ProcessSnapShot:
 
     def __init__(self):
-        logger.info("ProcessSnapShot")
+        logger.debug("ProcessSnapShot")
         self.proBefore = checkTasks()
 
     def killRedundant(self):
-        print "killRedundant"
+        logger.debug("killRedundant")
         self.proAfter = checkTasks()
         for i in range(len(self.proAfter)):
             if not (self.proAfter[i] in self.proBefore):
-                os.system(
-                    "taskkill /t /f /im {}".format(str(self.proAfter[i][0])))
-                print "Python killed {}".format(self.proAfter[i])
+                os.system("taskkill /t /f /im {}".format(str(self.proAfter[i][0])))
+                logger.debug("Python killed {}".format(self.proAfter[i]))
 
 
 def checkTasks():
@@ -58,20 +57,18 @@ class Timer:
         self.count += 1
         self.t.append(time.clock())
         self.tpn.append(TimePointName)
-        print ("Add Time Point: {}".format(TimePointName))
+        logger.debug(("Add Time Point: {}".format(TimePointName)))
 
     def OutputTimeLog(self):
         self.path = r"C:\WorkingFolder\testCase\testModel\TimeLog.log"
         if not os.path.isfile(self.path):
-            print "TimeLog.txt path not exist!"
+            logger.info("TimeLog.txt path not exist!")
             return
-        # print self.path
         with open(self.path, "a") as file:
             data = []
             for i in xrange(self.count):
                 fmt = "{tpn:<30}: {t:>6.2f} sec\n"
                 data.append(fmt.format(tpn=self.tpn[i], t=self.t[i]))
-            data.append("{0} End log {0}".format("=") * 50)
             file.writelines(data)
 
 
