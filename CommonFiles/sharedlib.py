@@ -47,11 +47,6 @@ def detectCrash():
     return False
 
 
-class MDXlib:
-    # Not implemented
-    pass
-
-
 class Timer:
 
     def __init__(self):
