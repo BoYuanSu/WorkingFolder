@@ -56,11 +56,10 @@ class Timer:
         self.count += 1
         self.t.append(time.clock())
         self.tpn.append(TimePointName)
-        print ("Add Time Point: %s" % TimePointName)
-        # print self.count
+        print ("Add Time Point: {}".format(TimePointName))
 
     def OutputTimeLog(self):
-        self.path = r"C:\WorkingFolder\testCase\testModel\TimeLog_%s.txt"
+        self.path = r"C:\WorkingFolder\testCase\testModel\TimeLog.txt"
         if not os.path.isdir(self.path):
             print "TimeLog.txt path not exist!"
             return

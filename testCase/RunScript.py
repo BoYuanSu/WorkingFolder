@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 import sys
 import os
-sys.path.append("../CommonFiles")
+sys.dont_write_bytecode = True
+os.chdir(os.path.dirname(__file__))
 sys.path.append("./testScript")
-import sharedlib
+sys.path.append("..")
+from CommonFiles import *
 # from PythonScript_SAM import utility, mypycom
 # from testScript import TestScript
 
@@ -20,6 +22,10 @@ def main():
     """
     Doing main test
     """
+    for key, val in globals().items():
+        print key, "::", val
+        pass
+
     timerecord.OutputTimeLog()
 
     if iTestMode == 0:
