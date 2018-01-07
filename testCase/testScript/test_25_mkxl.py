@@ -2,6 +2,8 @@ T1 = "T1"
 T2 = "T2"
 T3 = "Test_25_mkxl"
 sharedClassName = "Sample"
+argsInit = ()
+kwargsInit = {}
 
 
 class TestStage:
@@ -10,6 +12,8 @@ class TestStage:
         print "initialized test Stage class"
         # shared class name for your own Test Group
         self.sharedClassName = "Sample"
+        # self.argsInit = argsInit
+        # self.kwargsInit = kwargsInit
         # attritubes for return Django DB
         self.t1 = T1
         self.t2 = T2
@@ -18,21 +22,26 @@ class TestStage:
 
         self.tlm = 0
 
-        self.arg = ""
         self.fn = ""
+        # Used for Indentify Need to Check Successful or Failed
+        self.isIgnoredTr = False
 
     def Stage_001_CollectStatsData(self):
-        # Not Implemented
+        self.mt = "cmd"
+        # self.isIgnoredTr = True
+        self.fn = "Collect_Net_Data"
         pass
 
-    def Stage_003_WriteStatsData(self):
-        # Not Implemented
+    def Stage_002_WriteStatsData(self):
+        self.mt = "openpyxl"
+        # self.isIgnoredTr = True
+        self.fn = "Write_Stats_Data"
         pass
 
-    def Stage_000_Setup(self):
-        # Not Implemented
-        pass
+    # def Stage_000_Setup(self):
+    #     # Not Implemented
+    #     pass
 
-    def Stage_999_Teardown(self):
-        # Not Implemented
-        pass
+    # def Stage_999_Teardown(self):
+    #     # Not Implemented
+    #     pass

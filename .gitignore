@@ -1,4 +1,5 @@
 .vscode
 *.pyc
 *.log
+*.logbak
 test_func.py

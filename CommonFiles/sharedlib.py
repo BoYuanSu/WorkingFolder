@@ -1,7 +1,11 @@
+import inspect
 import logging
 import os
+import Queue
 import subprocess
 import sys
+import threading
+
 # import ConfigParser
 # import json
 import time
@@ -11,6 +15,104 @@ import TestFile_BackUp as backuptool
 
 sys.dont_write_bytecode = True
 
+
+class PyTestLauncher():
+
+    def __init__(self, sharedmd, sharedClass, insStages):
+
+        argsinit = getattr(insStages, "argsInit", ())
+        kwargsinit = getattr(insStages, "kwargsInit", {})
+        self.insSharedclass = sharedClass(*argsinit, **kwargsinit)
+        self.insstages = insStages
+        self.q = sharedmd.q
+        self._stop_event = threading.Event()
+        self.CONSTATTR = self.constattr
+        # for k in self.CONSTATTR.iterkeys():
+        #     if id(self.CONSTATTR[k]) == id(self.insstages.__dict__[k]):
+        #         print "WARNING"
+
+    def Run(self):
+        self._reset_attr()
+        fn = getattr(self.insSharedclass, self.insstages.fn)
+        if not fn:
+            raise Exception("Function of Shared Class not Found!")
+        # print function
+        self.thd = TempThread()
+        self.thd.setfn(fn)
+        self.thd.start()
+        # self.thd.join(0)
+
+    def wait(self):
+        while self.thd.isAlive():
+            pass
+        try:
+            self.q.get(block=False)
+        except Queue.Empty:
+            pass
+
+    def _get_shared_mthd(self):
+        if not getattr(self.insstages, "fn"):
+            raise Exception("Function for Test Stage not Found!")
+        return getattr(self.insSharedclass, self.insstages.fn)
+
+    def _reset_attr(self):
+        for key in self.CONSTATTR.iterkeys():
+            self.insstages.__dict__[key] = self.CONSTATTR[key]
+
+    @property
+    def constattr(self):
+        keys = self.insstages.__dict__.keys()
+        excludedKeys = ["t1", "t2", "t3", "sharedClassName", "fn", "mt"]
+        CONSTATTR = {}
+        for excludekey in excludedKeys:
+            keys.pop(keys.index(excludekey))
+        # print keys
+        for key in keys:
+            CONSTATTR[key] = self.insstages.__dict__[key]
+        return CONSTATTR
+
+    @property
+    def _stagesMethod(self):
+        methods = []
+        methodsTup = inspect.getmembers(self.insstages, inspect.ismethod)
+        for mthdtup in methodsTup:
+            if mthdtup[0].startswith("Stage_"):
+                methods.append(mthdtup[1])
+        if len(methods) == 0:
+            raise Exception("Stages from TestScript not Found!")
+        return methods
+
+
+class TempThread(threading.Thread):
+
+    def __int__(self):
+
+        super(TempThread, self).__init__()
+        # self._stop_event = threading.Event()
+        # threading.Thread.__init__(self)
+        # self.f = fn
+        self.min = 1
+        self.max = 2
+        self.fn = None
+        # threading.Thread.__init__(self)
+
+    def run(self):
+        print self.min, self.max
+        self.min = ()
+        self.max = {}
+        self.fn(*self.min, **self.max)
+        pass
+
+    def setfn(self, fn):
+        # self.args_f = ()
+        # self.kwargs_f = {}
+        self.fn = fn
+
+    # def stop(self):
+    #     self._stop_event.set()
+
+    # def stopped(self):
+    #     return self._stop_event.is_set()
 
 
 class ProcessSnapShot:

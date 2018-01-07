@@ -5,6 +5,8 @@ import os
 import sys
 import types
 
+sys.dont_write_bytecode = True
+
 try:
     os.chdir(os.path.dirname(__file__))
 except WindowsError:
@@ -14,7 +16,6 @@ sys.path.append("..")
 from CommonFiles import *
 from testScript import *
 
-sys.dont_write_bytecode = True
 
 # For Test Mode Setting(Test or not, 1:Yes, 0:No)
 iTestMode = 1
@@ -39,17 +40,18 @@ def main():
     """
     insStages = Run.getStageInstance()
 
-    methods = inspect.getmembers(insStages, inspect.ismethod)
+    sharedmd, sharedclass = Run.getSharedObj(insStages.sharedClassName)
 
-    for method in methods:
-        # print method[0]
+    testlauncher = sharedlib.PyTestLauncher(sharedmd, sharedclass, insStages)
+    # testlauncher._get_insstage_attr()
+
+    for stage in testlauncher._stagesMethod:
+        logger.info("{0} {1} {0}".format("@" * 5, stage.__name__))
+        stage()
+        testlauncher.Run()
+        testlauncher.wait()
+        timerecord.addTimeStamp(stage.__name__)
         pass
-
-    sharedcls = Run.getsharedClass(insStages.sharedClassName)
-
-    sharedcls()
-
-    # del sharedcls
 
 
 class Run:
@@ -81,7 +83,7 @@ class Run:
         for name, obj in globals().items():
             if not isinstance(obj, types.ModuleType):
                 continue
-            if not "..\CommonFiles" in os.path.dirname(str(obj)):
+            if "..\CommonFiles" not in os.path.dirname(str(obj)):
                 continue
             # print "{:<20} :: {}".format(name, obj)
             modules = inspect.getmembers(obj, inspect.ismodule)
@@ -123,11 +125,11 @@ class Run:
                 return cls[1]()
 
     @staticmethod
-    def getsharedClass(clsname):
+    def getSharedObj(clsname):
         for name, obj in globals().items():
             if not isinstance(obj, types.ModuleType):
                 continue
-            if not "..\CommonFiles" in os.path.dirname(str(obj)):
+            if "..\CommonFiles" not in os.path.dirname(str(obj)):
                 continue
             # Get Modules import from ..\CommonFildes
             modules = inspect.getmembers(obj, inspect.ismodule)
@@ -136,9 +138,7 @@ class Run:
                 clses = inspect.getmembers(m[1], inspect.isclass)
                 for cls in clses:
                     if cls[0] == clsname:
-                        return cls[1]
-
-
+                        return m[1], cls[1]
 
 
 if __name__ == "__main__":
@@ -158,6 +158,7 @@ if __name__ == "__main__":
 
     Run.closeLoggerFilehdlr()
 
+    os.system("copy {0} {0}bak /y".format(r".\testModel\TimeLog.log"))
     os.system("del {} /s /q".format(r".\testModel\TimeLog.log"))
 
     if iTestMode == 0:
