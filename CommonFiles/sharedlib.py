@@ -9,6 +9,9 @@ from subprocess import PIPE
 
 import TestFile_BackUp as backuptool
 
+sys.dont_write_bytecode = True
+
+
 
 class ProcessSnapShot:
 
@@ -72,18 +75,28 @@ class Timer:
             file.writelines(data)
 
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+def Logger(name=__name__, logLV=logging.INFO, pathTestlog=""):
 
-formatter = logging.Formatter("%(asctime)s: %(name)s: %(message)s")
-formatter2 = logging.Formatter("%(message)s")
+    if not pathTestlog:
+        pathTestlog = r".\testModel\TimeLog.log"
+    logger = logging.getLogger(name)
+    logger.setLevel(logLV)
 
-file_handler = logging.FileHandler(r".\testModel\TimeLog.log")
-file_handler.setLevel(logging.DEBUG)
-file_handler.setFormatter(formatter)
+    formatter = logging.Formatter("%(asctime)s: %(name)s: %(message)s")
+    formatter2 = logging.Formatter("%(message)s")
+    try:
+        file_handler = logging.FileHandler(pathTestlog)
+    except IOError:
+        file_handler = logging.FileHandler(r"C:\WorkingFolder\testCase\testModel\TimeLog.log")
+    file_handler.setLevel(logLV)
+    file_handler.setFormatter(formatter)
 
-stream_handler = logging.StreamHandler()
-stream_handler.setFormatter(formatter2)
+    stream_handler = logging.StreamHandler()
+    stream_handler.setFormatter(formatter2)
 
-logger.addHandler(file_handler)
-logger.addHandler(stream_handler)
+    logger.addHandler(file_handler)
+    logger.addHandler(stream_handler)
+    return logger
+
+
+logger = Logger()

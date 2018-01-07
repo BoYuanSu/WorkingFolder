@@ -1,25 +1,27 @@
 # -*- coding: utf-8 -*-
-import sys
-sys.dont_write_bytecode = True
-
 import inspect
-import os
-import types
 import logging
+import os
+import sys
+import types
 
 try:
     os.chdir(os.path.dirname(__file__))
 except WindowsError:
     pass
 sys.path.append("..")
+
 from CommonFiles import *
 from testScript import *
+
+sys.dont_write_bytecode = True
 
 # For Test Mode Setting(Test or not, 1:Yes, 0:No)
 iTestMode = 1
 
 # Setting log level
-logLV = logging.INFO
+logLV = logging.DEBUG
+pathTestlog = r".\testModel\TimeLog.log"
 """
 Options List of logging Level
 CRITICAL = 50
@@ -35,21 +37,34 @@ def main():
     """
     Doing main test
     """
-    Stages = Run.getStageInstance()
+    insStages = Run.getStageInstance()
+
+    methods = inspect.getmembers(insStages, inspect.ismethod)
+
+    for method in methods:
+        # print method[0]
+        pass
+
+    sharedcls = Run.getsharedClass(insStages.sharedClassName)
+
+    sharedcls()
+
+    # del sharedcls
 
 
 class Run:
 
     @staticmethod
     def createLoggerFilehdlr():
+
         print "Create logger handlers"
-        logger = logging.getLogger(__name__)
+        logger = logging.getLogger(__name__, logLV)
         logger.setLevel(logLV)
 
         formatter = logging.Formatter("%(asctime)s: %(name)s: %(message)s")
         formatter2 = logging.Formatter("%(message)s")
 
-        file_handler = logging.FileHandler(r".\testModel\TimeLog.log")
+        file_handler = logging.FileHandler(pathTestlog)
         file_handler.setLevel(logLV)
         file_handler.setFormatter(formatter)
 
@@ -63,19 +78,31 @@ class Run:
     @staticmethod
     def closeLoggerFilehdlr():
         print "close logger handlers"
-
         for name, obj in globals().items():
-            if isinstance(obj, types.ModuleType):
-                try:
-                    for handler in obj.logger.handlers:
-                        handler.close()
-                except AttributeError:
-                    pass
+            if not isinstance(obj, types.ModuleType):
+                continue
+            if not "..\CommonFiles" in os.path.dirname(str(obj)):
+                continue
+            # print "{:<20} :: {}".format(name, obj)
+            modules = inspect.getmembers(obj, inspect.ismodule)
+            for m in modules:
+                # print m[0]
+                Run.closeHdlr(m[1])
+            Run.closeHdlr(obj)
 
         for hdlr in logger.handlers:
             hdlr.close()
-        with open(r".\testModel\TimeLog.log", "a") as log:
+        with open(pathTestlog, "a") as log:
             log.write("{0} End log {0}\n".format("=" * 50))
+
+    @staticmethod
+    def closeHdlr(ref):
+        try:
+            for handler in ref.logger.handlers:
+                handler.close()
+            # print "=" * 10 + "> delete hdlr " + str(ref.__name__)
+        except AttributeError:
+            pass
 
     @staticmethod
     def getStageInstance():
@@ -95,35 +122,49 @@ class Run:
             if cls[0] == "TestStage":
                 return cls[1]()
 
+    @staticmethod
+    def getsharedClass(clsname):
+        for name, obj in globals().items():
+            if not isinstance(obj, types.ModuleType):
+                continue
+            if not "..\CommonFiles" in os.path.dirname(str(obj)):
+                continue
+            # Get Modules import from ..\CommonFildes
+            modules = inspect.getmembers(obj, inspect.ismodule)
+            # iter over all class in modules and get matched classname
+            for m in modules:
+                clses = inspect.getmembers(m[1], inspect.isclass)
+                for cls in clses:
+                    if cls[0] == clsname:
+                        return cls[1]
+
+
+
 
 if __name__ == "__main__":
 
     timerecord = sharedlib.Timer()
 
-    logger = Run.createLoggerFilehdlr()
-    timerecord.addTimeStamp("Creatlogger")
+    logger = sharedlib.Logger(__name__, logLV=logLV, pathTestlog=pathTestlog)
 
     if iTestMode == 0:
         processes = sharedlib.ProcessSnapShot()
-
-    sharedlib.ProcessSnapShot()
-    timerecord.addTimeStamp("ProcessSnapShot")
 
     print "=" * 100
     main()
     print "=" * 100
 
-    Run.closeLoggerFilehdlr()
-    timerecord.addTimeStamp("Closelogger")
-
     timerecord.OutputTimeLog()
+
+    Run.closeLoggerFilehdlr()
+
+    os.system("del {} /s /q".format(r".\testModel\TimeLog.log"))
 
     if iTestMode == 0:
         TestFile_BackUp
 
         # Test Finish, kill unused process(*.exe)
         processes.killRedundant()
-
         # Copy "TestCaseFN" folder to C:\work\LOG\TestID
         # Return Test Finish to Django DB
         sharedlib.ReturnTestFinish(os.path.dirname(__file__))
