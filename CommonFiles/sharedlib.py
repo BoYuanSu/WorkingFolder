@@ -1,11 +1,11 @@
-import os
-import sys
-import subprocess
 import logging
-from subprocess import PIPE
+import os
+import subprocess
+import sys
 # import ConfigParser
 # import json
 import time
+from subprocess import PIPE
 
 import TestFile_BackUp as backuptool
 
