@@ -46,12 +46,17 @@ def main():
     # testlauncher._get_insstage_attr()
 
     for stage in testlauncher._stagesMethod:
-        logger.info("{0} {1} {0}".format("@" * 5, stage.__name__))
+        logger.info("{0} {1} {0}".format("@" * 20, stage.__name__))
+        testlauncher._reset_attr()
         stage()
+        logger.info("{0} {1}".format("=" * 5, "Setting InsStage Attributes ..."))
         testlauncher.Run()
         testlauncher.wait()
+        tr = testlauncher.check_test_result()
+        logger.info("{0} Test Result: {1} !".format("*" * 5, tr))
         timerecord.addTimeStamp(stage.__name__)
-        pass
+        if tr != "Successful":
+            break
 
 
 class Run:

@@ -1,4 +1,11 @@
 import sharedlib
 from mdxlib import MDXlib
-import SAM
-import FEA
+
+try:
+    import SAM
+except ImportError:
+    pass
+try:
+    import FEA
+except ImportError:
+    pass

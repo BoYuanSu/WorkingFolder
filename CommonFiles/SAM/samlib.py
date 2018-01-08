@@ -1,5 +1,6 @@
 import sys
 import traceback
+import time
 import Queue
 
 sys.dont_write_bytecode = True
@@ -18,8 +19,8 @@ q = Queue.Queue(maxsize=1)
 class Error(Exception):
 
     def __init__(self, msg=""):
-        self.message = ">>> {} !!!".format(msg)
-        logger.error(msg)
+        self.message = "{0} {1} ...".format("!"*5, msg)
+        logger.error(self.message)
         q.put(2, block=True)
 
     def __str__(self):
@@ -44,22 +45,27 @@ class Sample:
 
     def Collect_Net_Data(self):
         try:
-            logger.info(self.Collect_Net_Data.__name__)
-            q.put(0, block=True)
+            time.sleep(5)
+            # raise CopyDataError
+            q.put(0, block=False)
+            pass
+        except (CopyDataError,):
             pass
         except Exception:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             traceback.print_exception(exc_type, exc_value, exc_traceback, file=sys.stdout)
-            q.put(2, block=True)
+            q.put(2, block=False)
             pass
 
     def Write_Stats_Data(self):
         try:
-            logger.info(self.Write_Stats_Data.__name__)
-            q.put(0, block=True)
+            time.sleep(5)
+            q.put(0, block=False)
+            print "Put Q = 0 at Write_Stats_Data"
             pass
         except Exception:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             traceback.print_exception(exc_type, exc_value, exc_traceback, file=sys.stdout)
-            q.put(2, block=True)
+            q.put(2, block=False)
+            print "Put Q = 2 at Write_Stats_Data"
             pass

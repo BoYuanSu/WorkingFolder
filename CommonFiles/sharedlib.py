@@ -2,16 +2,16 @@ import inspect
 import logging
 import os
 import Queue
-import subprocess
+# import subprocess
 import sys
 import threading
 
 # import ConfigParser
 # import json
 import time
-from subprocess import PIPE
+# from subprocess import PIPE
 
-import TestFile_BackUp as backuptool
+# import TestFile_BackUp as backuptool
 
 sys.dont_write_bytecode = True
 
@@ -26,45 +26,82 @@ class PyTestLauncher():
         self.insstages = insStages
         self.q = sharedmd.q
         self._stop_event = threading.Event()
-        self.CONSTATTR = self.constattr
-        # for k in self.CONSTATTR.iterkeys():
-        #     if id(self.CONSTATTR[k]) == id(self.insstages.__dict__[k]):
-        #         print "WARNING"
+        self.CONSTATTR = self._constattr
 
     def Run(self):
-        self._reset_attr()
         fn = getattr(self.insSharedclass, self.insstages.fn)
         if not fn:
             raise Exception("Function of Shared Class not Found!")
-        # print function
+        logger.info("{0} Call Method: {1} ...".format("=" * 5, fn.__name__))
         self.thd = TempThread()
-        self.thd.setfn(fn)
+        self.thd.set(fn, (), {})
         self.thd.start()
-        # self.thd.join(0)
+        self.thd.join(0)
 
     def wait(self):
+        hasTimeLimit = getattr(self.insstages, "tlm")
+        tcont = 0
         while self.thd.isAlive():
-            pass
+            logger.info("Waiting ...")
+            if tcont > hasTimeLimit:
+                logger.info("!!!!! Time Out Failed ...")
+                self.q.put(3, block=False)
+                break
+            tcont += 1
+            time.sleep(1)
+
+    def check_test_result(self):
+        # Must get Q for clearing q data struct before check isIgnoredTr
         try:
-            self.q.get(block=False)
+            iResult = self.q.get(block=False)
         except Queue.Empty:
-            pass
+            logger.info("===== Get Q Data Failed ...")
+            return "Failed"
+
+        # Check the Stage Whether to Check Test Result or not
+        if getattr(self.insstages, "isIgnoredTr", False):
+            return "Successful"
+
+        # Check iResult Type
+        if iResult == 0:
+            return "Successful"
+        elif iResult == 3:
+            return "Time Out"
+        else:
+            return "Failed"
+
 
     def _get_shared_mthd(self):
-        if not getattr(self.insstages, "fn"):
+        if not hasattr(self.insstages, "fn"):
             raise Exception("Function for Test Stage not Found!")
         return getattr(self.insSharedclass, self.insstages.fn)
 
     def _reset_attr(self):
+        CONSTATTR = {
+            "isIgnoredTr": True,
+            "tlm": 0,
+        }
+        logger.info("{0} {1}".format("=" * 5, "Reset InsStages Attritubes ..."))
         for key in self.CONSTATTR.iterkeys():
-            self.insstages.__dict__[key] = self.CONSTATTR[key]
+            self.insstages.__dict__[key] = CONSTATTR[key]
 
     @property
-    def constattr(self):
+    def _constattr(self):
         keys = self.insstages.__dict__.keys()
-        excludedKeys = ["t1", "t2", "t3", "sharedClassName", "fn", "mt"]
+        excludedKeys = [
+            "t1",
+            "t2",
+            "t3",
+            "sharedClassName",
+            "fn",
+            "mt",
+            "argsInit",
+            "kwargsInit",
+        ]
         CONSTATTR = {}
         for excludekey in excludedKeys:
+            if excludekey not in keys:
+                continue
             keys.pop(keys.index(excludekey))
         # print keys
         for key in keys:
@@ -73,6 +110,14 @@ class PyTestLauncher():
 
     @property
     def _stagesMethod(self):
+        # Get Custom Stags for Maunal set stages
+        isCustomStage = getattr(self.insstages, "isCustomStage", False)
+        if isCustomStage:
+            if not hasattr(self.insstages, "_customStage"):
+                raise Exception("_customStage not Found")
+            return getattr(self.insstages, "_customStage")()
+
+        # Get methods from InsStags obj  which name was prefix "Stags_"
         methods = []
         methodsTup = inspect.getmembers(self.insstages, inspect.ismethod)
         for mthdtup in methodsTup:
@@ -86,33 +131,15 @@ class PyTestLauncher():
 class TempThread(threading.Thread):
 
     def __int__(self):
-
-        super(TempThread, self).__init__()
-        # self._stop_event = threading.Event()
-        # threading.Thread.__init__(self)
-        # self.f = fn
-        self.min = 1
-        self.max = 2
-        self.fn = None
-        # threading.Thread.__init__(self)
+        threading.Thread.__init__(self)
 
     def run(self):
-        print self.min, self.max
-        self.min = ()
-        self.max = {}
-        self.fn(*self.min, **self.max)
-        pass
+        self.fn(*self.args, **self.kwargs)
 
-    def setfn(self, fn):
-        # self.args_f = ()
-        # self.kwargs_f = {}
+    def set(self, fn, args, kwargs):
         self.fn = fn
-
-    # def stop(self):
-    #     self._stop_event.set()
-
-    # def stopped(self):
-    #     return self._stop_event.is_set()
+        self.args = args
+        self.kwargs = kwargs
 
 
 class ProcessSnapShot:
