@@ -13,7 +13,7 @@ except ImportError:
 logger = sharedlib.Logger(__name__)
 # logLV = logging.INFO
 
-q = Queue.Queue(maxsize=1)
+q = Queue.LifoQueue()
 
 
 class Error(Exception):
@@ -43,11 +43,15 @@ class Sample:
         logger.info("cls Sample initialized")
         pass
 
-    def Collect_Net_Data(self):
+    def Collect_Net_Data(self, arg1, arg2, arg3="arg3", arg4="argdefault"):
         try:
-            time.sleep(5)
             # raise CopyDataError
-            q.put(0, block=False)
+            logger.info(arg1)
+            logger.info(arg2)
+            logger.info(arg3)
+            logger.info(arg4)
+            time.sleep(5)
+            # q.put(0, block=False)
             pass
         except (CopyDataError,):
             pass
@@ -60,12 +64,63 @@ class Sample:
     def Write_Stats_Data(self):
         try:
             time.sleep(5)
+            # print
+            # print q.qsize()
+            # print "Put Q = 0 at Write_Stats_Data"
             q.put(0, block=False)
-            print "Put Q = 0 at Write_Stats_Data"
             pass
         except Exception:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             traceback.print_exception(exc_type, exc_value, exc_traceback, file=sys.stdout)
             q.put(2, block=False)
-            print "Put Q = 2 at Write_Stats_Data"
+            pass
+
+    def test_t_r(self, isFailed=False):
+        try:
+            time.sleep(5)
+            if isFailed:
+                raise Error
+            q.put(0, block=True)
+            pass
+        except Exception:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            traceback.print_exception(exc_type, exc_value, exc_traceback, file=sys.stdout)
+            q.put(2, block=False)
+            pass
+
+    def test_nt_r(self, isFailed=False):
+        try:
+            time.sleep(5)
+            if isFailed:
+                raise Error
+            q.put(0, block=True)
+            pass
+        except Exception:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            traceback.print_exception(exc_type, exc_value, exc_traceback, file=sys.stdout)
+            q.put(2, block=False)
+            pass
+
+    def test_t_nr(self, isFailed=False):
+        try:
+            time.sleep(5)
+            if isFailed:
+                raise Error
+            pass
+        except Exception:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            traceback.print_exception(exc_type, exc_value, exc_traceback, file=sys.stdout)
+            # q.put(2, block=False)
+            pass
+
+    def test_nt_nr(self, isFailed=False):
+        try:
+            time.sleep(5)
+            if isFailed:
+                raise Error
+            pass
+        except Exception:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            traceback.print_exception(exc_type, exc_value, exc_traceback, file=sys.stdout)
+            # q.put(2, block=False)
             pass

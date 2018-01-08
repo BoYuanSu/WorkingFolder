@@ -25,38 +25,40 @@ class PyTestLauncher():
         self.insSharedclass = sharedClass(*argsinit, **kwargsinit)
         self.insstages = insStages
         self.q = sharedmd.q
-        self._stop_event = threading.Event()
-        self.CONSTATTR = self._constattr
+        # self._stop_event = threading.Event()
+        # self.CONSTATTR = self._constattr
 
-    def Run(self):
-        fn = getattr(self.insSharedclass, self.insstages.fn)
-        if not fn:
-            raise Exception("Function of Shared Class not Found!")
+    def run(self):
+        fn = self._getSharedMthd()
         logger.info("{0} Call Method: {1} ...".format("=" * 5, fn.__name__))
         self.thd = TempThread()
-        self.thd.set(fn, (), {})
+        self.thd.set(fn, self.insstages.fnargs, self.insstages.fnkwargs)
         self.thd.start()
         self.thd.join(0)
 
-    def wait(self):
+    def wait(self, ditcProcess={}):
         hasTimeLimit = getattr(self.insstages, "tlm")
         tcont = 0
+        self.isTimeOut = False
         while self.thd.isAlive():
             logger.info("Waiting ...")
-            if tcont > hasTimeLimit:
-                logger.info("!!!!! Time Out Failed ...")
-                self.q.put(3, block=False)
+            if tcont > hasTimeLimit and hasTimeLimit:
+                logger.info("!!!!! Time Out ...")
+                self.isTimeOut = True
                 break
             tcont += 1
             time.sleep(1)
 
-    def check_test_result(self):
+    def checkTestResult(self):
         # Must get Q for clearing q data struct before check isIgnoredTr
         try:
             iResult = self.q.get(block=False)
+            logger.info("{0} Get Q Data, Current Q size: {1} ...".format("=" * 5, self.q.qsize()))
         except Queue.Empty:
-            logger.info("===== Get Q Data Failed ...")
-            return "Failed"
+            if not self.isTimeOut:
+                logger.info("===== Get Q Data Failed ...")
+                return "Failed"
+            iResult = 1
 
         # Check the Stage Whether to Check Test Result or not
         if getattr(self.insstages, "isIgnoredTr", False):
@@ -65,24 +67,34 @@ class PyTestLauncher():
         # Check iResult Type
         if iResult == 0:
             return "Successful"
-        elif iResult == 3:
-            return "Time Out"
         else:
             return "Failed"
 
-    def _get_shared_mthd(self):
-        if not hasattr(self.insstages, "fn"):
-            raise Exception("Function for Test Stage not Found!")
+    def _getSharedMthd(self):
+        if not getattr(self.insstages, "fn"):
+            raise Exception("Attribute fn Setted by Stages not Found!")
+        if not hasattr(self.insSharedclass, self.insstages.fn):
+            raise Exception("Function(method) of Sharedclass Called by Stage not Found!")
         return getattr(self.insSharedclass, self.insstages.fn)
 
-    def _reset_attr(self):
+    def _resetAttrs(self):
         CONSTATTR = {
-            "isIgnoredTr": True,
+            "fn": None,
+            "fnargs": (),
+            "fnkwargs": {},
+            "isIgnoredTr": False,
             "tlm": 0,
         }
         logger.info("{0} {1}".format("=" * 5, "Reset InsStages Attritubes ..."))
-        for key in self.CONSTATTR.iterkeys():
+        for key in CONSTATTR.iterkeys():
             self.insstages.__dict__[key] = CONSTATTR[key]
+        # print self.insstages.fn
+
+    @staticmethod
+    def _logTestResult():
+        r = f()
+        logger.info("{0} Test Result: {1} !".format("=" * 5, tr))
+        return r
 
     @property
     def _constattr(self):
@@ -108,7 +120,7 @@ class PyTestLauncher():
         return CONSTATTR
 
     @property
-    def _stagesMethod(self):
+    def stagesMethod(self):
         # Get Custom Stags for Maunal set stages
         isCustomStage = getattr(self.insstages, "isCustomStage", False)
         if isCustomStage:
@@ -125,6 +137,13 @@ class PyTestLauncher():
         if len(methods) == 0:
             raise Exception("Stages from TestScript not Found!")
         return methods
+
+    @staticmethod
+    def ReturnTestFinish(pathReserve=""):
+        pathFinishProcess = r"C:\Work\XenTools\Test_Finish_Process\Test_Process_Process.py"
+        if pathReserve != "":
+            pathReserve = " -fp " + pathReserve
+        os.popen("call python {} {}".format(pathFinishProcess, pathReserve))
 
 
 class TempThread(threading.Thread):
@@ -161,13 +180,6 @@ def checkTasks():
     for i in range(len(TaskList)):
         TaskList[i] = [q for q in TaskList[i].split(' ') if q != ''][:1]
     return TaskList
-
-
-def ReturnTestFinish(pathReserve=""):
-    pathFinishProcess = r"C:\Work\XenTools\Test_Finish_Process\Test_Process_Process.py"
-    if pathReserve != "":
-        pathReserve = " -fp " + pathReserve
-    os.popen("call python {} {}".format(pathFinishProcess, pathReserve))
 
 
 def detectCrash():

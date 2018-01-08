@@ -38,52 +38,30 @@ def main():
     """
     Doing main test
     """
-    insStages = Run.getStageInstance()
+    insStages = Run.getStageClass()
 
-    sharedmd, sharedclass = Run.getSharedObj(insStages.sharedClassName)
+    sharedmd, sharedclass = Run.getShared(insStages.sharedClassName)
 
     testlauncher = sharedlib.PyTestLauncher(sharedmd, sharedclass, insStages)
-    # testlauncher._get_insstage_attr()
 
-    for stage in testlauncher._stagesMethod:
+    for stage in testlauncher.stagesMethod:
         logger.info("{0} {1} {0}".format("@" * 20, stage.__name__))
-        testlauncher._reset_attr()
+        testlauncher._resetAttrs()
         stage()
-        logger.info("{0} {1}".format("=" * 5, "Setting InsStage Attributes ..."))
-        testlauncher.Run()
+        # logger.info("{0} {1}".format("=" * 5, "Setting InsStage Attributes ..."))
+        testlauncher.run()
         testlauncher.wait()
-        tr = testlauncher.check_test_result()
-        logger.info("{0} Test Result: {1} !".format("*" * 5, tr))
+        tr = testlauncher.checkTestResult()
+        logger.info("{0} Test Result: {1} !".format("=" * 5, tr))
         timerecord.addTimeStamp(stage.__name__)
-        if tr != "Successful":
-            break
+        # if tr != "Successful":
+        #     break
 
 
 class Run:
 
     @staticmethod
-    def createLoggerFilehdlr():
-
-        print "Create logger handlers"
-        logger = logging.getLogger(__name__, logLV)
-        logger.setLevel(logLV)
-
-        formatter = logging.Formatter("%(asctime)s: %(name)s: %(message)s")
-        formatter2 = logging.Formatter("%(message)s")
-
-        file_handler = logging.FileHandler(pathTestlog)
-        file_handler.setLevel(logLV)
-        file_handler.setFormatter(formatter)
-
-        stream_handler = logging.StreamHandler()
-        stream_handler.setFormatter(formatter2)
-
-        logger.addHandler(file_handler)
-        logger.addHandler(stream_handler)
-        return logger
-
-    @staticmethod
-    def closeLoggerFilehdlr():
+    def findLoggerFilehdlr():
         print "close logger handlers"
         for name, obj in globals().items():
             if not isinstance(obj, types.ModuleType):
@@ -112,7 +90,7 @@ class Run:
             pass
 
     @staticmethod
-    def getStageInstance():
+    def getStageClass():
         testclass = []
         for name, obj in globals().items():
             if not isinstance(obj, types.ModuleType):
@@ -130,7 +108,7 @@ class Run:
                 return cls[1]()
 
     @staticmethod
-    def getSharedObj(clsname):
+    def getShared(clsname):
         for name, obj in globals().items():
             if not isinstance(obj, types.ModuleType):
                 continue
@@ -161,7 +139,7 @@ if __name__ == "__main__":
 
     timerecord.OutputTimeLog()
 
-    Run.closeLoggerFilehdlr()
+    Run.findLoggerFilehdlr()
 
     os.system("copy {0} {0}bak /y".format(r".\testModel\TimeLog.log"))
     os.system("del {} /s /q".format(r".\testModel\TimeLog.log"))
@@ -173,4 +151,4 @@ if __name__ == "__main__":
         processes.killRedundant()
         # Copy "TestCaseFN" folder to C:\work\LOG\TestID
         # Return Test Finish to Django DB
-        sharedlib.ReturnTestFinish(os.path.dirname(__file__))
+        sharedlib.PyTestLauncher.ReturnTestFinish(os.path.dirname(__file__))
