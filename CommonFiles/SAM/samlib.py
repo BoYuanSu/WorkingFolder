@@ -122,5 +122,5 @@ class Sample:
         except Exception:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             traceback.print_exception(exc_type, exc_value, exc_traceback, file=sys.stdout)
-            # q.put(2, block=False)
+            q.put(2, block=False)
             pass

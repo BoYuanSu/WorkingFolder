@@ -116,6 +116,7 @@ class TestStage:
         self.mt = "None"
         self.isIgnoredTr = True
         self.fn = "test_nt_nr"
+        self.tlm = 1
         print("---------------------------------------- assert pass")
         pass
 
@@ -123,7 +124,6 @@ class TestStage:
         self.mt = "None"
         self.isIgnoredTr = True
         self.fn = "test_nt_nr"
-        self.fnkwargs = {"isFailed": True}
         print("---------------------------------------- assert failed")
         pass
 

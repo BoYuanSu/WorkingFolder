@@ -51,17 +51,18 @@ class PyTestLauncher():
 
     def checkTestResult(self):
         # Must get Q for clearing q data struct before check isIgnoredTr
+        isIgnoredTr = getattr(self.insstages, "isIgnoredTr", False)
         try:
             iResult = self.q.get(block=False)
             logger.info("{0} Get Q Data, Current Q size: {1} ...".format("=" * 5, self.q.qsize()))
         except Queue.Empty:
-            if not self.isTimeOut:
+            if not self.isTimeOut and not isIgnoredTr:
                 logger.info("===== Get Q Data Failed ...")
                 return "Failed"
             iResult = 1
 
         # Check the Stage Whether to Check Test Result or not
-        if getattr(self.insstages, "isIgnoredTr", False):
+        if isIgnoredTr:
             return "Successful"
 
         # Check iResult Type
@@ -89,35 +90,6 @@ class PyTestLauncher():
         for key in CONSTATTR.iterkeys():
             self.insstages.__dict__[key] = CONSTATTR[key]
         # print self.insstages.fn
-
-    @staticmethod
-    def _logTestResult():
-        r = f()
-        logger.info("{0} Test Result: {1} !".format("=" * 5, tr))
-        return r
-
-    @property
-    def _constattr(self):
-        keys = self.insstages.__dict__.keys()
-        excludedKeys = [
-            "t1",
-            "t2",
-            "t3",
-            "sharedClassName",
-            "fn",
-            "mt",
-            "argsInit",
-            "kwargsInit",
-        ]
-        CONSTATTR = {}
-        for excludekey in excludedKeys:
-            if excludekey not in keys:
-                continue
-            keys.pop(keys.index(excludekey))
-        # print keys
-        for key in keys:
-            CONSTATTR[key] = self.insstages.__dict__[key]
-        return CONSTATTR
 
     @property
     def stagesMethod(self):
@@ -222,7 +194,7 @@ def Logger(name=__name__, logLV=logging.INFO, pathTestlog=""):
     logger = logging.getLogger(name)
     logger.setLevel(logLV)
 
-    formatter = logging.Formatter("%(asctime)s: %(name)s: %(message)s")
+    formatter = logging.Formatter("%(asctime)s: %(message)s")
     formatter2 = logging.Formatter("%(message)s")
     try:
         file_handler = logging.FileHandler(pathTestlog)
