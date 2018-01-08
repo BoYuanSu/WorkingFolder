@@ -19,7 +19,7 @@ q = Queue.Queue(maxsize=1)
 class Error(Exception):
 
     def __init__(self, msg=""):
-        self.message = "{0} {1} ...".format("!"*5, msg)
+        self.message = "{0} {1} ...".format("!" * 5, msg)
         logger.error(self.message)
         q.put(2, block=True)
 

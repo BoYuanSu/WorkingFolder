@@ -70,7 +70,6 @@ class PyTestLauncher():
         else:
             return "Failed"
 
-
     def _get_shared_mthd(self):
         if not hasattr(self.insstages, "fn"):
             raise Exception("Function for Test Stage not Found!")
