@@ -22,6 +22,7 @@ q = Queue.LifoQueue()
 fbgzUser = "paulsu"
 fbgzPassword = "123456"
 
+
 class Error(Exception):
 
     def __init__(self, msg=""):
@@ -55,7 +56,7 @@ class FEAInterface:
             time.sleep(5)
             q.put(0, block=False)
             pass
-        except (CopyDataError,):
+        except (FileSizeError,):
             pass
         except Exception:
             exc_type, exc_value, exc_traceback = sys.exc_info()

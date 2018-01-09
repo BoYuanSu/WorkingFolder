@@ -58,6 +58,7 @@ def main():
             raise AssertionError
         logger.info("{0} Test Result: {1} !".format("=" * 5, "Pass"))
 
+
 class Run:
 
     @staticmethod

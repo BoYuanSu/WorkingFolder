@@ -44,7 +44,7 @@ class PyTestLauncher():
             logger.info("===== Disable Checking TimeOut")
         else:
             self.isIgnored_TimeOut = False
-            logger.info("{} Enable Checking TimeOut: {} min(s)".format("=" * 5, TimeLimit/60))
+            logger.info("{} Enable Checking TimeOut: {} min(s)".format("=" * 5, TimeLimit / 60))
 
         tcont = 0
         self.isTimeOut = False
@@ -98,11 +98,6 @@ class PyTestLauncher():
                     return "Failed"
                 if iResult == 3:
                     return "Successful"
-
-
-
-
-            # time.sleep(1)
 
     def _getQ(self):
         try:
