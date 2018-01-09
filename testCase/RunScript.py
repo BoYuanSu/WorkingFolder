@@ -54,9 +54,8 @@ def main():
         tr = testlauncher.checkTestResult()
         logger.info("{0} Test Result: {1} !".format("=" * 5, tr))
         timerecord.addTimeStamp(stage.__name__)
-        # if tr != "Successful":
-        #     break
-
+        if tr != testlauncher.insstages.assertattr:
+            raise AssertionError
 
 class Run:
 
@@ -142,7 +141,7 @@ if __name__ == "__main__":
     Run.findLoggerFilehdlr()
 
     os.system("copy {0} {0}bak /y".format(r".\testModel\TimeLog.log"))
-    os.system("del {} /s /q".format(r".\testModel\TimeLog.log"))
+    # os.system("del {} /s /q".format(r".\testModel\TimeLog.log"))
 
     if iTestMode == 0:
         TestFile_BackUp

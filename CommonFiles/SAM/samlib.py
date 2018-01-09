@@ -15,13 +15,17 @@ logger = sharedlib.Logger(__name__)
 
 q = Queue.LifoQueue()
 
+# Setting Test Group User Name/Password of Maintainer
+fbgzUser = "paulsu"
+fbgzPassword = "123456"
+
 
 class Error(Exception):
 
     def __init__(self, msg=""):
         self.message = "{0} {1} ...".format("!" * 5, msg)
         logger.error(self.message)
-        q.put(2, block=True)
+        q.put(4)
 
     def __str__(self):
         return repr(self.message)
@@ -77,50 +81,55 @@ class Sample:
 
     def test_t_r(self, isFailed=False):
         try:
-            time.sleep(5)
+            time.sleep(3)
             if isFailed:
                 raise Error
-            q.put(0, block=True)
+            q.put(1)
+        except Error:
             pass
         except Exception:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             traceback.print_exception(exc_type, exc_value, exc_traceback, file=sys.stdout)
-            q.put(2, block=False)
+            q.put(5)
+
             pass
 
     def test_nt_r(self, isFailed=False):
         try:
-            time.sleep(5)
+            time.sleep(3)
             if isFailed:
                 raise Error
-            q.put(0, block=True)
+            pass
+            q.put(0)
+        except (Error):
             pass
         except Exception:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             traceback.print_exception(exc_type, exc_value, exc_traceback, file=sys.stdout)
-            q.put(2, block=False)
+            q.put(4)
             pass
 
     def test_t_nr(self, isFailed=False):
         try:
-            time.sleep(5)
+            time.sleep(3)
             if isFailed:
                 raise Error
             pass
+            q.put(2)
         except Exception:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             traceback.print_exception(exc_type, exc_value, exc_traceback, file=sys.stdout)
-            # q.put(2, block=False)
+            q.put(4)
             pass
 
     def test_nt_nr(self, isFailed=False):
         try:
-            time.sleep(5)
+            time.sleep(3)
             if isFailed:
                 raise Error
-            pass
+            q.put(3)
         except Exception:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             traceback.print_exception(exc_type, exc_value, exc_traceback, file=sys.stdout)
-            q.put(2, block=False)
+            q.put(4)
             pass

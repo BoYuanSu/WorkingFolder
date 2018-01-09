@@ -25,8 +25,8 @@ class PyTestLauncher():
         self.insSharedclass = sharedClass(*argsinit, **kwargsinit)
         self.insstages = insStages
         self.q = sharedmd.q
-        # self._stop_event = threading.Event()
-        # self.CONSTATTR = self._constattr
+        self.fu = sharedmd.fbgzUser
+        self.fp = sharedmd.fbgzPassword
 
     def run(self):
         fn = self._getSharedMthd()
@@ -37,12 +37,20 @@ class PyTestLauncher():
         self.thd.join(0)
 
     def wait(self, ditcProcess={}):
-        hasTimeLimit = getattr(self.insstages, "tlm")
+        # if Time Limit == 0 means don't check time out
+        TimeLimit = getattr(self.insstages, "tlm")
+        self.isIgnored_TimeOut = True
+        if TimeLimit == 0:
+            logger.info("===== Disable Checking TimeOut")
+        else:
+            self.isIgnored_TimeOut = False
+            logger.info("{} Enable Checking TimeOut: {} min(s)".format("=" * 5, TimeLimit/60))
+
         tcont = 0
         self.isTimeOut = False
         while self.thd.isAlive():
-            logger.info("Waiting ...")
-            if tcont > hasTimeLimit and hasTimeLimit:
+            # logger.info("Waiting ...")
+            if tcont > TimeLimit and TimeLimit:
                 logger.info("!!!!! Time Out ...")
                 self.isTimeOut = True
                 break
@@ -50,26 +58,63 @@ class PyTestLauncher():
             time.sleep(1)
 
     def checkTestResult(self):
-        # Must get Q for clearing q data struct before check isIgnoredTr
-        isIgnoredTr = getattr(self.insstages, "isIgnoredTr", False)
+        isIgnored_TestResult = getattr(self.insstages, "isIgnoredTr")
+        isIgnored_TimeOut = self.isIgnored_TimeOut
+        isTimeOut = self.isTimeOut
+        logger.debug("""{},
+            isIgnored_TestResult: {}
+            isIgnored_TimeOut: {},
+            isTimeOut: {}""".format("=" * 5, isIgnored_TestResult, isIgnored_TimeOut, isTimeOut))
+        fmt = "Log True loggic {0}"
+        while True:
+            iResult = self._getQ()
+            if iResult == 5:
+                return "Exception Failed"
+            fmt = "Log True loggic {0}"
+            if isIgnored_TimeOut and not isIgnored_TestResult:
+                logger.info(fmt.format("test_nt_r"))
+                if iResult == "Empty" or iResult == 4:
+                    return "Failed"
+                if iResult == 0:
+                    return "Successful"
+
+            if not isIgnored_TimeOut and not isIgnored_TestResult:
+                logger.info(fmt.format("test_t_r"))
+                if iResult == "Empty" or iResult == 4:
+                    return "Failed"
+                if iResult == 1:
+                    return "Successful"
+
+            if not isIgnored_TimeOut and isIgnored_TestResult:
+                logger.info(fmt.format("test_t_nr"))
+                if iResult == "Empty":
+                    return "Failed"
+                if iResult == 2:
+                    return "Successful"
+
+            if isIgnored_TimeOut and isIgnored_TestResult:
+                logger.info(fmt.format("test_nt_nr"))
+                if iResult == "Empty":
+                    return "Failed"
+                if iResult == 3:
+                    return "Successful"
+
+
+
+
+            # time.sleep(1)
+
+    def _getQ(self):
         try:
-            iResult = self.q.get(block=False)
-            logger.info("{0} Get Q Data, Current Q size: {1} ...".format("=" * 5, self.q.qsize()))
+            # logger.info("Q siez: {}".format(self.q.qsize()))
+            if self.q.qsize() == 0:
+                raise Queue.Empty
+            i = self.q.get(block=False)
+            # logger.info("Q result: {}".format(i))
+            return i
+            # logger.info("{0} Get Q Data, Current Q size: {1} ...".format("=" * 5, self.q.qsize()))
         except Queue.Empty:
-            if not self.isTimeOut and not isIgnoredTr:
-                logger.info("===== Get Q Data Failed ...")
-                return "Failed"
-            iResult = 1
-
-        # Check the Stage Whether to Check Test Result or not
-        if isIgnoredTr:
-            return "Successful"
-
-        # Check iResult Type
-        if iResult == 0:
-            return "Successful"
-        else:
-            return "Failed"
+            return "Empty"
 
     def _getSharedMthd(self):
         if not getattr(self.insstages, "fn"):
@@ -89,7 +134,6 @@ class PyTestLauncher():
         logger.info("{0} {1}".format("=" * 5, "Reset InsStages Attritubes ..."))
         for key in CONSTATTR.iterkeys():
             self.insstages.__dict__[key] = CONSTATTR[key]
-        # print self.insstages.fn
 
     @property
     def stagesMethod(self):

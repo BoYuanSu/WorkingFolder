@@ -18,6 +18,10 @@ from comstages import ComTestStage
 q = Queue.LifoQueue()
 
 
+# Setting Test Group User Name/Password of Maintainer
+fbgzUser = "paulsu"
+fbgzPassword = "123456"
+
 class Error(Exception):
 
     def __init__(self, msg=""):
