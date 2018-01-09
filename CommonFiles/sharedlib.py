@@ -24,26 +24,28 @@ class PyTestLauncher():
         kwargsinit = getattr(insStages, "kwargsInit", {})
         self.insSharedclass = sharedClass(*argsinit, **kwargsinit)
         self.insstages = insStages
+        self._resetAttrs()
         self.q = sharedmd.q
         self.fu = sharedmd.fbgzUser
         self.fp = sharedmd.fbgzPassword
         self.itercont = 0
 
     def run(self):
-        fn = self._getSharedMthd()
+        logger.info("{0} {1:^25} {0}".format("@" * 20, self._StageName))
+        self.syncVMInfo(self._StageName)
+        fn = self._getSharedMthd
         logger.info("{0} Call Method: {1} ...".format("=" * 5, fn.__name__))
         self.thd = TempThread()
         self.thd.set(fn, self.insstages.fnargs, self.insstages.fnkwargs)
         self.thd.start()
         self.thd.join(0)
+        # logger.info("{0} {1} {0}".format("@" * 20, self._StageName))
 
     def wait(self, ditcProcess={}):
-        logger.info("{0} {1} {0}".format("@" * 20, self._StageName))
-
-        # if Time Limit == 0 means don't check time out
         TimeLimit = getattr(self.insstages, "tlm")
         self.isIgnored_TimeOut = True
         if TimeLimit == 0:
+            # if Time Limit == 0 means don't check time out
             logger.info("===== Disable Checking TimeOut")
         else:
             self.isIgnored_TimeOut = False
@@ -62,6 +64,13 @@ class PyTestLauncher():
         self.itercont += 1
 
     def checkTestResult(self):
+        tr = self._wrapCheckTestResult()
+        self._resetAttrs()
+        logger.info("{0} Test Result: {1} !".format("=" * 5, tr))
+
+        return tr
+
+    def _wrapCheckTestResult(self):
         isIgnored_TestResult = getattr(self.insstages, "isIgnoredTr")
         isIgnored_TimeOut = self.isIgnored_TimeOut
         isTimeOut = self.isTimeOut
@@ -104,17 +113,14 @@ class PyTestLauncher():
                     return "Successful"
 
     def _getQ(self):
-        try:
-            # logger.info("Q siez: {}".format(self.q.qsize()))
-            if self.q.qsize() == 0:
-                raise Queue.Empty
-            i = self.q.get(block=False)
-            # logger.info("Q result: {}".format(i))
-            return i
-            # logger.info("{0} Get Q Data, Current Q size: {1} ...".format("=" * 5, self.q.qsize()))
-        except Queue.Empty:
+        # logger.info("Q siez: {}".format(self.q.qsize()))
+        if self.q.qsize() == 0:
             return "Empty"
+        return self.q.get(block=False)
+        # logger.info("Q result: {}".format(i))
+        # logger.info("{0} Get Q Data, Current Q size: {1} ...".format("=" * 5, self.q.qsize()))
 
+    @property
     def _getSharedMthd(self):
         if not getattr(self.insstages, "fn"):
             raise Exception("Attribute fn Setted by Stages not Found!")
@@ -173,10 +179,10 @@ class PyTestLauncher():
 
     @staticmethod
     def syncVMInfo(StageName):
+        logger.debug("{} {}".format("~" * 5, StageName))
         logger.info("===== Return Stage Info to Django DB ...")
         path = r"C:\work\VM_Require_Tools\VM_Info_Sync\VM_Info_Sync.py"
-        cmd = "python {} -sn \"{}\"".format(path, StageName)
-        os.popen("python %s -sn '%s'" % (path, StageName))
+        os.popen("python {} -sn \"{}\"".format(path, StageName))
 
 
 class TempThread(threading.Thread):

@@ -45,17 +45,15 @@ def main():
     testlauncher = sharedlib.PyTestLauncher(sharedmd, sharedclass, insStages)
 
     for stage in testlauncher.stagesMethod:
-        testlauncher.syncVMInfo(stage.__name__)
-        testlauncher._resetAttrs()
         stage()
         testlauncher.run()
         testlauncher.wait()
         tr = testlauncher.checkTestResult()
-        # logger.info("{0} Test Result: {1} !".format("=" * 5, tr))
         timerecord.addTimeStamp(stage.__name__)
+        # Used for unittest
         if tr != testlauncher.insstages.assertattr:
             raise AssertionError
-        logger.info("{0} Test Result: {1} !".format("=" * 5, "Pass"))
+        logger.debug("{0} Test Result: {1} !".format("=" * 5, "Pass"))
 
 
 class Run:

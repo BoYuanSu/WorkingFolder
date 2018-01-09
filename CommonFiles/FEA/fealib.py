@@ -47,7 +47,7 @@ class FileSizeError(Error):
 class FEAInterface:
 
     def __init__(self):
-        logger.info("cls FEAInterface initialized")
+        logger.info("!!!!! class FEAInterface initialized")
         pass
 
     def LaunchMDX3DI2(self):

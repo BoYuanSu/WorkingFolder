@@ -44,7 +44,7 @@ class MonitorError(Error):
 class Sample:
 
     def __init__(self):
-        logger.info("cls Sample initialized")
+        logger.info("!!!!! class Sample initialized")
         pass
 
     def Collect_Net_Data(self, arg1, arg2, arg3="arg3", arg4="argdefault"):
@@ -54,8 +54,8 @@ class Sample:
             logger.info(arg2)
             logger.info(arg3)
             logger.info(arg4)
-            time.sleep(5)
-            # q.put(0, block=False)
+            # time.sleep(5)
+            q.put(0)
             pass
         except (CopyDataError,):
             pass
