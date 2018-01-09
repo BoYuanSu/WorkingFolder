@@ -1,7 +1,6 @@
 import inspect
 import logging
 import os
-import Queue
 # import subprocess
 import sys
 import threading
@@ -25,9 +24,7 @@ class PyTestLauncher():
         self.insSharedclass = sharedClass(*argsinit, **kwargsinit)
         self.insstages = insStages
         self._resetAttrs()
-        self.q = sharedmd.q
-        self.fu = sharedmd.fbgzUser
-        self.fp = sharedmd.fbgzPassword
+        self.q, self.fu, self.fp = self._getSharedmdAttr(sharedmd)
         self.itercont = 0
 
     def run(self):
@@ -127,6 +124,19 @@ class PyTestLauncher():
         if not hasattr(self.insSharedclass, self.insstages.fn):
             raise Exception("Function(method) of Sharedclass Called by Stage not Found!")
         return getattr(self.insSharedclass, self.insstages.fn)
+
+    def _getSharedmdAttr(self, sharedmd):
+        if not hasattr(sharedmd, "q"):
+            raise Exception("Set q = Queue.LifoQueue in your shared module")
+        if not hasattr(sharedmd, "fbgzUser"):
+            raise Exception("Set your Fogbugz account, ex: fbgzUser = \"paulsu\"")
+        if not hasattr(sharedmd, "fbgzPassword"):
+            raise Exception("Set your Fogbugz password (type string), ex: fbgzUser = \"123456\"")
+        return (
+            getattr(sharedmd, "q"),
+            getattr(sharedmd, "fbgzUser"),
+            getattr(sharedmd, "fbgzPassword",)
+        )
 
     def _resetAttrs(self):
         CONSTATTR = {

@@ -40,7 +40,7 @@ def main():
     """
     insStages = Run.getStageClass()
 
-    sharedmd, sharedclass = Run.getShared(insStages.sharedClassName)
+    sharedmd, sharedclass = Run.getSharedModule(insStages.sharedClassName)
 
     testlauncher = sharedlib.PyTestLauncher(sharedmd, sharedclass, insStages)
 
@@ -106,7 +106,7 @@ class Run:
                 return cls[1]()
 
     @staticmethod
-    def getShared(clsname):
+    def getSharedModule(clsname):
         for name, obj in globals().items():
             if not isinstance(obj, types.ModuleType):
                 continue
@@ -133,7 +133,7 @@ if __name__ == "__main__":
 
     print "=" * 100
     main()
-    print "=" * 100
+    # print "=" * 100
 
     timerecord.OutputTimeLog()
 
