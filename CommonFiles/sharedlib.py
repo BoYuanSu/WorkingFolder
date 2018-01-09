@@ -27,6 +27,7 @@ class PyTestLauncher():
         self.q = sharedmd.q
         self.fu = sharedmd.fbgzUser
         self.fp = sharedmd.fbgzPassword
+        self.itercont = 0
 
     def run(self):
         fn = self._getSharedMthd()
@@ -37,6 +38,8 @@ class PyTestLauncher():
         self.thd.join(0)
 
     def wait(self, ditcProcess={}):
+        logger.info("{0} {1} {0}".format("@" * 20, self._StageName))
+
         # if Time Limit == 0 means don't check time out
         TimeLimit = getattr(self.insstages, "tlm")
         self.isIgnored_TimeOut = True
@@ -56,6 +59,7 @@ class PyTestLauncher():
                 break
             tcont += 1
             time.sleep(1)
+        self.itercont += 1
 
     def checkTestResult(self):
         isIgnored_TestResult = getattr(self.insstages, "isIgnoredTr")
@@ -137,6 +141,7 @@ class PyTestLauncher():
         if isCustomStage:
             if not hasattr(self.insstages, "_customStage"):
                 raise Exception("_customStage not Found")
+            self._recordStagesName(getattr(self.insstages, "_customStage")())
             return getattr(self.insstages, "_customStage")()
 
         # Get methods from InsStags obj  which name was prefix "Stags_"
@@ -147,7 +152,17 @@ class PyTestLauncher():
                 methods.append(mthdtup[1])
         if len(methods) == 0:
             raise Exception("Stages from TestScript not Found!")
+        self._recordStagesName(methods)
         return methods
+
+    @property
+    def _StageName(self):
+        return self.calledStagesName[self.itercont]
+
+    def _recordStagesName(self, methods):
+        self.calledStagesName = []
+        for stage in methods:
+            self.calledStagesName.append(stage.__name__)
 
     @staticmethod
     def ReturnTestFinish(pathReserve=""):
@@ -155,6 +170,13 @@ class PyTestLauncher():
         if pathReserve != "":
             pathReserve = " -fp " + pathReserve
         os.popen("call python {} {}".format(pathFinishProcess, pathReserve))
+
+    @staticmethod
+    def syncVMInfo(StageName):
+        logger.info("===== Return Stage Info to Django DB ...")
+        path = r"C:\work\VM_Require_Tools\VM_Info_Sync\VM_Info_Sync.py"
+        cmd = "python {} -sn \"{}\"".format(path, StageName)
+        os.popen("python %s -sn '%s'" % (path, StageName))
 
 
 class TempThread(threading.Thread):

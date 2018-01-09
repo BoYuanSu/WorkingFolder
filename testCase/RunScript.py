@@ -45,10 +45,9 @@ def main():
     testlauncher = sharedlib.PyTestLauncher(sharedmd, sharedclass, insStages)
 
     for stage in testlauncher.stagesMethod:
-        logger.info("{0} {1} {0}".format("@" * 20, stage.__name__))
+        testlauncher.syncVMInfo(stage.__name__)
         testlauncher._resetAttrs()
         stage()
-        # logger.info("{0} {1}".format("=" * 5, "Setting InsStage Attributes ..."))
         testlauncher.run()
         testlauncher.wait()
         tr = testlauncher.checkTestResult()
