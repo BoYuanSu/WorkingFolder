@@ -76,7 +76,7 @@ class TestStage:
         self.fn = "test_t_r"
         self.tlm = 10
         self.assertattr = "Successful"
-        print("---------------------------------------- assertattr pass")
+        # print("---------------------------------------- assertattr pass")
         pass
 
     def Stage_UNT2_(self):
@@ -84,14 +84,14 @@ class TestStage:
         self.fn = "test_t_r"
         self.tlm = 1
         self.assertattr = "Failed"
-        print("---------------------------------------- assertattr failed")
+        # print("---------------------------------------- assertattr failed")
         pass
 
     def Stage_UNT3_(self):
         self.mt = "None"
         self.fn = "test_nt_r"
         self.assertattr = "Successful"
-        print("---------------------------------------- assertattr pass")
+        # print("---------------------------------------- assertattr pass")
         pass
 
     def Stage_UNT4_(self):
@@ -99,7 +99,7 @@ class TestStage:
         self.fn = "test_nt_r"
         self.fnkwargs = {"isFailed": True}
         self.assertattr = "Failed"
-        print("---------------------------------------- assertattr failed")
+        # print("---------------------------------------- assertattr failed")
         pass
 
     def Stage_UNT5_(self):
@@ -108,7 +108,7 @@ class TestStage:
         self.fn = "test_t_nr"
         self.tlm = 10
         self.assertattr = "Successful"
-        print("---------------------------------------- assertattr pass")
+        # print("---------------------------------------- assertattr pass")
         pass
 
     def Stage_UNT6_(self):
@@ -117,7 +117,7 @@ class TestStage:
         self.fn = "test_t_nr"
         self.tlm = 1
         self.assertattr = "Failed"
-        print("---------------------------------------- assertattr failed")
+        # print("---------------------------------------- assertattr failed")
         pass
 
     def Stage_UNT7_(self):
@@ -125,7 +125,7 @@ class TestStage:
         self.isIgnoredTr = True
         self.fn = "test_nt_nr"
         self.assertattr = "Successful"
-        print("---------------------------------------- assertattr pass")
+        # print("---------------------------------------- assertattr pass")
         pass
 
     def Stage_UNT8_(self):
@@ -133,7 +133,7 @@ class TestStage:
         self.isIgnoredTr = True
         self.fn = "test_nt_nr"
         self.assertattr = "Successful"
-        print("---------------------------------------- assertattr pass")
+        # print("---------------------------------------- assertattr pass")
         pass
 
     def _customStage(self):

@@ -23,7 +23,7 @@ fbgzPassword = "123456"
 class Error(Exception):
 
     def __init__(self, msg=""):
-        self.message = "{0} {1} ...".format("!" * 5, msg)
+        self.message = "{0} {1} ...".format("!" * 5, "Custom Error Occurred")
         logger.error(self.message)
         q.put(4)
 

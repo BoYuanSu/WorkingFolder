@@ -70,7 +70,7 @@ class PyTestLauncher():
             iResult = self._getQ()
             if iResult == 5:
                 return "Exception Failed"
-            fmt = "Log True loggic {0}"
+            fmt = "===== Log True loggic {0}"
             if isIgnored_TimeOut and not isIgnored_TestResult:
                 logger.info(fmt.format("test_nt_r"))
                 if iResult == "Empty" or iResult == 4:

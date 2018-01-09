@@ -52,10 +52,11 @@ def main():
         testlauncher.run()
         testlauncher.wait()
         tr = testlauncher.checkTestResult()
-        logger.info("{0} Test Result: {1} !".format("=" * 5, tr))
+        # logger.info("{0} Test Result: {1} !".format("=" * 5, tr))
         timerecord.addTimeStamp(stage.__name__)
         if tr != testlauncher.insstages.assertattr:
             raise AssertionError
+        logger.info("{0} Test Result: {1} !".format("=" * 5, "Pass"))
 
 class Run:
 
