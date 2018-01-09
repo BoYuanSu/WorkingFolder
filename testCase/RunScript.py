@@ -51,7 +51,7 @@ def main():
         tr = testlauncher.checkTestResult()
         timerecord.addTimeStamp(stage.__name__)
         # Used for unittest
-        if tr != testlauncher.insstages.assertattr:
+        if tr != testlauncher.insStages.assertattr:
             raise AssertionError
         logger.debug("{0} Test Result: {1} !".format("=" * 5, "Pass"))
 

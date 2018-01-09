@@ -22,7 +22,7 @@ class PyTestLauncher():
         argsinit = getattr(insStages, "argsInit", ())
         kwargsinit = getattr(insStages, "kwargsInit", {})
         self.insSharedclass = sharedClass(*argsinit, **kwargsinit)
-        self.insstages = insStages
+        self.insStages = insStages
         self._resetAttrs()
         self.q, self.fu, self.fp = self._getSharedmdAttr(sharedmd)
         self.itercont = 0
@@ -33,13 +33,13 @@ class PyTestLauncher():
         fn = self._getSharedMthd
         logger.info("{0} Call Method: {1} ...".format("=" * 5, fn.__name__))
         self.thd = TempThread()
-        self.thd.set(fn, self.insstages.fnargs, self.insstages.fnkwargs)
+        self.thd.set(fn, self.insStages.fnargs, self.insStages.fnkwargs)
         self.thd.start()
         self.thd.join(0)
         # logger.info("{0} {1} {0}".format("@" * 20, self._StageName))
 
     def wait(self, ditcProcess={}):
-        TimeLimit = getattr(self.insstages, "tlm")
+        TimeLimit = getattr(self.insStages, "tlm")
         self.isIgnored_TimeOut = True
         if TimeLimit == 0:
             # if Time Limit == 0 means don't check time out
@@ -68,7 +68,7 @@ class PyTestLauncher():
         return tr
 
     def _wrapCheckTestResult(self):
-        isIgnored_TestResult = getattr(self.insstages, "isIgnoredTr")
+        isIgnored_TestResult = getattr(self.insStages, "isIgnoredTr")
         isIgnored_TimeOut = self.isIgnored_TimeOut
         isTimeOut = self.isTimeOut
         logger.debug("""{},
@@ -119,11 +119,11 @@ class PyTestLauncher():
 
     @property
     def _getSharedMthd(self):
-        if not getattr(self.insstages, "fn"):
+        if not getattr(self.insStages, "fn"):
             raise Exception("Attribute fn Setted by Stages not Found!")
-        if not hasattr(self.insSharedclass, self.insstages.fn):
+        if not hasattr(self.insSharedclass, self.insStages.fn):
             raise Exception("Function(method) of Sharedclass Called by Stage not Found!")
-        return getattr(self.insSharedclass, self.insstages.fn)
+        return getattr(self.insSharedclass, self.insStages.fn)
 
     def _getSharedmdAttr(self, sharedmd):
         if not hasattr(sharedmd, "q"):
@@ -148,21 +148,21 @@ class PyTestLauncher():
         }
         logger.info("{0} {1}".format("=" * 5, "Reset InsStages Attritubes ..."))
         for key in CONSTATTR.iterkeys():
-            self.insstages.__dict__[key] = CONSTATTR[key]
+            self.insStages.__dict__[key] = CONSTATTR[key]
 
     @property
     def stagesMethod(self):
         # Get Custom Stags for Maunal set stages
-        isCustomStage = getattr(self.insstages, "isCustomStage", False)
+        isCustomStage = getattr(self.insStages, "isCustomStage", False)
         if isCustomStage:
-            if not hasattr(self.insstages, "_customStage"):
+            if not hasattr(self.insStages, "_customStage"):
                 raise Exception("_customStage not Found")
-            self._recordStagesName(getattr(self.insstages, "_customStage")())
-            return getattr(self.insstages, "_customStage")()
+            self._recordStagesName(getattr(self.insStages, "_customStage")())
+            return getattr(self.insStages, "_customStage")()
 
         # Get methods from InsStags obj  which name was prefix "Stags_"
         methods = []
-        methodsTup = inspect.getmembers(self.insstages, inspect.ismethod)
+        methodsTup = inspect.getmembers(self.insStages, inspect.ismethod)
         for mthdtup in methodsTup:
             if mthdtup[0].startswith("Stage_"):
                 methods.append(mthdtup[1])
