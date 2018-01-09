@@ -67,6 +67,21 @@ class PyTestLauncher():
 
         return tr
 
+    def reportBugProxy_(self, tr):
+        # collect information for Report_Bug_Proxy
+        insStages = self.insStages
+        t1 = getattr(insStages, "t1")
+        t2 = getattr(insStages, "t2")
+        t3 = getattr(insStages, "t3")
+        mt = getattr(insStages, "mt")
+        sn = self._StageName
+        se = ""
+        aip = ""
+        bcp = ""
+        fu = self.fu
+        fp = self.fp
+        self.reportBugProxy(t1, t2, t3, mt, sn, tr, se, aip, bcp, fu, fp)
+
     def _wrapCheckTestResult(self):
         isIgnored_TestResult = getattr(self.insStages, "isIgnoredTr")
         isIgnored_TimeOut = self.isIgnored_TimeOut
@@ -82,28 +97,28 @@ class PyTestLauncher():
                 return "Exception Failed"
             fmt = "===== Log True loggic {0}"
             if isIgnored_TimeOut and not isIgnored_TestResult:
-                logger.info(fmt.format("test_nt_r"))
+                logger.debug(fmt.format("test_nt_r"))
                 if iResult == "Empty" or iResult == 4:
                     return "Failed"
                 if iResult == 0:
                     return "Successful"
 
             if not isIgnored_TimeOut and not isIgnored_TestResult:
-                logger.info(fmt.format("test_t_r"))
+                logger.debug(fmt.format("test_t_r"))
                 if iResult == "Empty" or iResult == 4:
                     return "Failed"
                 if iResult == 1:
                     return "Successful"
 
             if not isIgnored_TimeOut and isIgnored_TestResult:
-                logger.info(fmt.format("test_t_nr"))
+                logger.debug(fmt.format("test_t_nr"))
                 if iResult == "Empty":
                     return "Failed"
                 if iResult == 2:
                     return "Successful"
 
             if isIgnored_TimeOut and isIgnored_TestResult:
-                logger.info(fmt.format("test_nt_nr"))
+                logger.debug(fmt.format("test_nt_nr"))
                 if iResult == "Empty":
                     return "Failed"
                 if iResult == 3:
@@ -193,6 +208,23 @@ class PyTestLauncher():
         logger.info("===== Return Stage Info to Django DB ...")
         path = r"C:\work\VM_Require_Tools\VM_Info_Sync\VM_Info_Sync.py"
         os.popen("python {} -sn \"{}\"".format(path, StageName))
+
+    @staticmethod
+    def reportBugProxy(t1, t2, t3, mt, sn, tr, se, aip, bcp, fu, fp):
+        cmd = 'python "{path}" -t1 "{t1}" -t2 "{t2}" -t3 "{t3}" -sn "{sn}" -tr "{tr}" -se "{se}" -aip "{aip}" -bcp "{bcp}" -fu "{fu}" -fp "{fp}" -mt "{mt}"'.format(
+            path=r"C:\work\XenTools\VM_Require_Tools\FogBugzAPITest\Report_Bug_Proxy.py",
+            t1=t1,
+            t2=t2,
+            t3=t3,
+            sn=sn,
+            tr=tr,
+            se=se,
+            aip=aip,
+            bcp=bcp,
+            fu=fu,
+            fp=fp,
+            mt=mt)
+        os.popen(cmd)
 
 
 class TempThread(threading.Thread):
