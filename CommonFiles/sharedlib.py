@@ -14,6 +14,7 @@ import time
 
 sys.dont_write_bytecode = True
 
+logLV_=logging.INFO
 
 class PyTestLauncher():
 
@@ -36,7 +37,6 @@ class PyTestLauncher():
         self.thd.set(fn, self.insStages.fnargs, self.insStages.fnkwargs)
         self.thd.start()
         self.thd.join(0)
-        # logger.info("{0} {1} {0}".format("@" * 20, self._StageName))
 
     def wait(self, ditcProcess={}):
         TimeLimit = getattr(self.insStages, "tlm")
@@ -58,14 +58,66 @@ class PyTestLauncher():
                 break
             tcont += 1
             time.sleep(1)
-        self.itercont += 1
 
     def checkTestResult(self):
         tr = self._wrapCheckTestResult()
-        self._resetAttrs()
         logger.info("{0} Test Result: {1} !".format("=" * 5, tr))
-
+        self.reportBugProxy_(tr)
+        self._resetAttrs()
+        self.itercont += 1
         return tr
+
+    def _wrapCheckTestResult(self):
+        isIgnored_TestResult = getattr(self.insStages, "isIgnoredTr")
+        isIgnored_TimeOut = self.isIgnored_TimeOut
+        isTimeOut = self.isTimeOut
+        logger.debug("""{}
+            isIgnored_TestResult: {}
+            isIgnored_TimeOut: {},
+            isTimeOut: {}""".format("~" * 5, isIgnored_TestResult, isIgnored_TimeOut, isTimeOut))
+        fmt = "Log True loggic {0}"
+        while True:
+            iResult = self._getQ()
+            if iResult == 5:
+                return "Exception Failed"
+            fmt = "~~~~~ Log True loggic {0}"
+            if isIgnored_TimeOut and not isIgnored_TestResult:
+                logger.debug(fmt.format("No TimeOutcheck, TestResultcheck"))
+                if iResult == "Empty" or iResult == 4:
+                    return "Failed"
+                if iResult == 0:
+                    return "Successful"
+
+            if not isIgnored_TimeOut and not isIgnored_TestResult:
+                logger.debug(fmt.format("TimeOutcheck, Check TestResultcheck"))
+                if iResult == "Empty" or iResult == 4:
+                    return "Failed"
+                if iResult == 1:
+                    return "Successful"
+
+            if not isIgnored_TimeOut and isIgnored_TestResult:
+                logger.debug(fmt.format("TimeOutcheck, No TestResultcheck"))
+                if iResult == "Empty":
+                    return "Failed"
+                if iResult == 2:
+                    return "Successful"
+
+            if isIgnored_TimeOut and isIgnored_TestResult:
+                logger.debug(fmt.format("No TimeOutcheck, No TestResultcheck"))
+                if iResult == "Empty":
+                    return "Failed"
+                if iResult == 3:
+                    return "Successful"
+
+    def _getQ(self):
+        logger.debug("~~~~~ Q siez: {}".format(self.q.qsize()))
+        if self.q.qsize() == 0:
+            return "Empty"
+        elif self.q.qsize() != 1:
+            logger.debug("~~~~~ Other tr may be get")
+        return self.q.get(block=False)
+        # logger.debug("~~~~~ Q result: {}".format(i))
+        # logger.debug("{0} Get Q Data, Current Q size: {1} ...".format("=" * 5, self.q.qsize()))
 
     def reportBugProxy_(self, tr):
         # collect information for Report_Bug_Proxy
@@ -82,58 +134,9 @@ class PyTestLauncher():
         fp = self.fp
         self.reportBugProxy(t1, t2, t3, mt, sn, tr, se, aip, bcp, fu, fp)
 
-    def _wrapCheckTestResult(self):
-        isIgnored_TestResult = getattr(self.insStages, "isIgnoredTr")
-        isIgnored_TimeOut = self.isIgnored_TimeOut
-        isTimeOut = self.isTimeOut
-        logger.debug("""{},
-            isIgnored_TestResult: {}
-            isIgnored_TimeOut: {},
-            isTimeOut: {}""".format("=" * 5, isIgnored_TestResult, isIgnored_TimeOut, isTimeOut))
-        fmt = "Log True loggic {0}"
-        while True:
-            iResult = self._getQ()
-            if iResult == 5:
-                return "Exception Failed"
-            fmt = "===== Log True loggic {0}"
-            if isIgnored_TimeOut and not isIgnored_TestResult:
-                logger.debug(fmt.format("test_nt_r"))
-                if iResult == "Empty" or iResult == 4:
-                    return "Failed"
-                if iResult == 0:
-                    return "Successful"
-
-            if not isIgnored_TimeOut and not isIgnored_TestResult:
-                logger.debug(fmt.format("test_t_r"))
-                if iResult == "Empty" or iResult == 4:
-                    return "Failed"
-                if iResult == 1:
-                    return "Successful"
-
-            if not isIgnored_TimeOut and isIgnored_TestResult:
-                logger.debug(fmt.format("test_t_nr"))
-                if iResult == "Empty":
-                    return "Failed"
-                if iResult == 2:
-                    return "Successful"
-
-            if isIgnored_TimeOut and isIgnored_TestResult:
-                logger.debug(fmt.format("test_nt_nr"))
-                if iResult == "Empty":
-                    return "Failed"
-                if iResult == 3:
-                    return "Successful"
-
-    def _getQ(self):
-        # logger.info("Q siez: {}".format(self.q.qsize()))
-        if self.q.qsize() == 0:
-            return "Empty"
-        return self.q.get(block=False)
-        # logger.info("Q result: {}".format(i))
-        # logger.info("{0} Get Q Data, Current Q size: {1} ...".format("=" * 5, self.q.qsize()))
-
     @property
     def _getSharedMthd(self):
+        logger.debug("===== Collecting execute function ...")
         if not getattr(self.insStages, "fn"):
             raise Exception("Attribute fn Setted by Stages not Found!")
         if not hasattr(self.insSharedclass, self.insStages.fn):
@@ -141,6 +144,7 @@ class PyTestLauncher():
         return getattr(self.insSharedclass, self.insStages.fn)
 
     def _getSharedmdAttr(self, sharedmd):
+        logger.debug("===== Collecting Test Info ...")
         if not hasattr(sharedmd, "q"):
             raise Exception("Set q = Queue.LifoQueue in your shared module")
         if not hasattr(sharedmd, "fbgzUser"):
@@ -172,8 +176,9 @@ class PyTestLauncher():
         if isCustomStage:
             if not hasattr(self.insStages, "_customStage"):
                 raise Exception("_customStage not Found")
-            self._recordStagesName(getattr(self.insStages, "_customStage")())
-            return getattr(self.insStages, "_customStage")()
+            methods = getattr(self.insStages, "_customStage")()
+            self._recordStagesName(methods)
+            return methods
 
         # Get methods from InsStags obj  which name was prefix "Stags_"
         methods = []
@@ -196,21 +201,15 @@ class PyTestLauncher():
             self.calledStagesName.append(stage.__name__)
 
     @staticmethod
-    def ReturnTestFinish(pathReserve=""):
-        pathFinishProcess = r"C:\Work\XenTools\Test_Finish_Process\Test_Process_Process.py"
-        if pathReserve != "":
-            pathReserve = " -fp " + pathReserve
-        os.popen("call python {} {}".format(pathFinishProcess, pathReserve))
-
-    @staticmethod
     def syncVMInfo(StageName):
         logger.debug("{} {}".format("~" * 5, StageName))
-        logger.info("===== Return Stage Info to Django DB ...")
+        logger.info("===== Upload Stage Info to Django DB ...")
         path = r"C:\work\VM_Require_Tools\VM_Info_Sync\VM_Info_Sync.py"
         os.popen("python {} -sn \"{}\"".format(path, StageName))
 
     @staticmethod
     def reportBugProxy(t1, t2, t3, mt, sn, tr, se, aip, bcp, fu, fp):
+        logger.info("===== Upload Report Bug Info to Django DB ...")
         cmd = 'python "{path}" -t1 "{t1}" -t2 "{t2}" -t3 "{t3}" -sn "{sn}" -tr "{tr}" -se "{se}" -aip "{aip}" -bcp "{bcp}" -fu "{fu}" -fp "{fp}" -mt "{mt}"'.format(
             path=r"C:\work\XenTools\VM_Require_Tools\FogBugzAPITest\Report_Bug_Proxy.py",
             t1=t1,
@@ -225,6 +224,14 @@ class PyTestLauncher():
             fp=fp,
             mt=mt)
         os.popen(cmd)
+
+    @staticmethod
+    def ReturnTestFinish(pathReserve=""):
+        logger.info("===== Upload Test Complete Info to Django DB ...")
+        pathFinishProcess = r"C:\Work\XenTools\Test_Finish_Process\Test_Process_Process.py"
+        if pathReserve != "":
+            pathReserve = " -fp " + pathReserve
+        os.popen("call python {} {}".format(pathFinishProcess, pathReserve))
 
 
 class TempThread(threading.Thread):
@@ -256,20 +263,6 @@ class ProcessSnapShot:
                 logger.debug("Python killed {}".format(self.proAfter[i]))
 
 
-def checkTasks():
-    TaskList = os.popen('tasklist').read().strip().split('\n')
-    for i in range(len(TaskList)):
-        TaskList[i] = [q for q in TaskList[i].split(' ') if q != ''][:1]
-    return TaskList
-
-
-def detectCrash():
-    r = os.popen('tasklist /v').read()
-    if "WerFault.exe" in r:
-        return True
-    return False
-
-
 class Timer:
 
     def __init__(self):
@@ -296,6 +289,20 @@ class Timer:
             file.writelines(data)
 
 
+def checkTasks():
+    TaskList = os.popen('tasklist').read().strip().split('\n')
+    for i in range(len(TaskList)):
+        TaskList[i] = [q for q in TaskList[i].split(' ') if q != ''][:1]
+    return TaskList
+
+
+def detectCrash():
+    r = os.popen('tasklist /v').read()
+    if "WerFault.exe" in r:
+        return True
+    return False
+
+
 def Logger(name=__name__, logLV=logging.INFO, pathTestlog=""):
 
     if not pathTestlog:
@@ -320,4 +327,4 @@ def Logger(name=__name__, logLV=logging.INFO, pathTestlog=""):
     return logger
 
 
-logger = Logger()
+logger = Logger(logLV=logLV_)
