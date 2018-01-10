@@ -42,7 +42,8 @@ def main():
 
     sharedmd, sharedclass = Run.getSharedModule(insStages.sharedClassName)
 
-    testlauncher = sharedlib.PyTestLauncher(sharedmd, sharedclass, insStages)
+    # testlauncher = sharedlib.PyTestLauncher(sharedmd, sharedclass, insStages)
+    testlauncher = sharedlib.TETestLauncher(sharedmd, sharedclass, insStages)
 
     for stage in testlauncher.stagesMethod:
         stage()

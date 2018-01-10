@@ -3,3 +3,5 @@
 2. 不判斷timeout, 不判斷測試結果
 3. 判斷timeout, 判斷測試結果
 4. 判斷timeout, 不判斷測試結果
+
+1. TE Import Script record relative path

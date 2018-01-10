@@ -1,2 +1,3 @@
-import test_25_mkxl
+# import test_25_mkxl
 # import testscript
+import test_00_te

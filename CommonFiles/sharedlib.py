@@ -4,10 +4,10 @@ import os
 # import subprocess
 import sys
 import threading
-
 # import ConfigParser
 # import json
 import time
+import win32com.client
 # from subprocess import PIPE
 
 # import TestFile_BackUp as backuptool
@@ -15,6 +15,7 @@ import time
 sys.dont_write_bytecode = True
 
 logLV_=logging.INFO
+
 
 class PyTestLauncher():
 
@@ -25,7 +26,7 @@ class PyTestLauncher():
         self.insSharedclass = sharedClass(*argsinit, **kwargsinit)
         self.insStages = insStages
         self._resetAttrs()
-        self.q, self.fu, self.fp = self._getSharedmdAttr(sharedmd)
+        self.q, self.fu, self.fp = self._getSharedmdAttr(sharedmd, ["q", "fu", "fp"])
         self.itercont = 0
 
     def run(self):
@@ -143,19 +144,22 @@ class PyTestLauncher():
             raise Exception("Function(method) of Sharedclass Called by Stage not Found!")
         return getattr(self.insSharedclass, self.insStages.fn)
 
-    def _getSharedmdAttr(self, sharedmd):
+    @staticmethod
+    def _getSharedmdAttr(sharedmd, sharedmdAttrs):
         logger.debug("===== Collecting Test Info ...")
-        if not hasattr(sharedmd, "q"):
-            raise Exception("Set q = Queue.LifoQueue in your shared module")
-        if not hasattr(sharedmd, "fbgzUser"):
-            raise Exception("Set your Fogbugz account, ex: fbgzUser = \"paulsu\"")
-        if not hasattr(sharedmd, "fbgzPassword"):
-            raise Exception("Set your Fogbugz password (type string), ex: fbgzUser = \"123456\"")
-        return (
-            getattr(sharedmd, "q"),
-            getattr(sharedmd, "fbgzUser"),
-            getattr(sharedmd, "fbgzPassword",)
-        )
+        Attrs = []
+        ErrorMsg = {
+            "q": "Set q = Queue.LifoQueue in your shared module",
+            "fu" : "Set your Fogbugz account, ex: fu = \"paulsu\"",
+            "fp": "Set your Fogbugz password (type string), ex: fp = \"123456\"",
+            "sharedTCPjsPath": "Set your TC  ProjectSuite Path",
+            "sharedTCPjName": "Set your TC  Project Name"
+        }
+        for sharedmdAttrName in sharedmdAttrs:
+            if not hasattr(sharedmd, sharedmdAttrName):
+                raise Exception(ErrorMsg[sharedmdAttrName])
+            Attrs.append(getattr(sharedmd, sharedmdAttrName))
+        return tuple(Attrs)
 
     def _resetAttrs(self):
         CONSTATTR = {
@@ -232,6 +236,34 @@ class PyTestLauncher():
         if pathReserve != "":
             pathReserve = " -fp " + pathReserve
         os.popen("call python {} {}".format(pathFinishProcess, pathReserve))
+
+
+class TETestLauncher(PyTestLauncher):
+
+    def __init__(self, sharedmd, sharedClass, insStages):
+        argsinit = getattr(insStages, "argsInit", ())
+        kwargsinit = getattr(insStages, "kwargsInit", {})
+        self.insSharedclass = sharedClass(*argsinit, **kwargsinit)
+        self.insStages = insStages
+        self.fu, self.fp = self._getSharedmdAttr(sharedmd, ["fu", "fp"])
+        self.sharedTCPjsPath = self._getSharedmdAttr(sharedmd, ["sharedTCPjsPath"])
+        self.sharedTCPjName = self._getSharedmdAttr(sharedmd, ["sharedTCPjName"])
+        self._resetAttrs()
+        self.itercont = 0
+
+    @staticmethod
+    def _dispatchTE():
+        logger.debug("~~~~~ Dispatch TE ...")
+        try:
+            return win32com.client.dynamic.Dispatch("TestExecute.TestExecuteApplication")
+        except Exception:
+            logger.debug("~~~~~ Dispatch TE Failed ...")
+
+    @staticmethod
+    def _openTCPjs(APP, Path):
+        logger.debug("{} Open TC ProjectSuite: {}...".format("~" * 5, Path))
+
+
 
 
 class TempThread(threading.Thread):

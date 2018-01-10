@@ -3,3 +3,7 @@
 *.log
 *.logbak
 test_func.py
+teimport.py
+ComRunScript
+*.py.bak
+Visualizer
