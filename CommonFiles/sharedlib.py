@@ -14,7 +14,7 @@ import win32com.client
 
 sys.dont_write_bytecode = True
 
-logLV_=logging.INFO
+logLV_ = logging.INFO
 
 
 class PyTestLauncher():
@@ -150,7 +150,7 @@ class PyTestLauncher():
         Attrs = []
         ErrorMsg = {
             "q": "Set q = Queue.LifoQueue in your shared module",
-            "fu" : "Set your Fogbugz account, ex: fu = \"paulsu\"",
+            "fu": "Set your Fogbugz account, ex: fu = \"paulsu\"",
             "fp": "Set your Fogbugz password (type string), ex: fp = \"123456\"",
             "sharedTCPjsPath": "Set your TC  ProjectSuite Path",
             "sharedTCPjName": "Set your TC  Project Name"
@@ -251,6 +251,14 @@ class TETestLauncher(PyTestLauncher):
         self._resetAttrs()
         self.itercont = 0
 
+    def _initTE(self):
+        while True:
+            self.APP = self._dispatchTE()
+            if self.APP:
+                break
+        self.APP.Manager.RunMode = 1
+        self._openTCPjs(self.APP, self.sharedTCPjsPath)
+
     @staticmethod
     def _dispatchTE():
         logger.debug("~~~~~ Dispatch TE ...")
@@ -262,8 +270,22 @@ class TETestLauncher(PyTestLauncher):
     @staticmethod
     def _openTCPjs(APP, Path):
         logger.debug("{} Open TC ProjectSuite: {}...".format("~" * 5, Path))
+        while True:
+            if APP.Integration.OpenProjectSuite(Path):
+                return
 
+    @property
+    def _getRoutinesIterator(self):
+        return self.APP.Integration.ProjectRoutinesIterator(self.sharedTCPjName)
 
+    def run(self):
+        pass
+
+    def wait(self):
+        pass
+
+    def checkTestResult(self):
+        pass
 
 
 class TempThread(threading.Thread):

@@ -1,6 +1,4 @@
 import sys
-import traceback
-import time
 
 sys.dont_write_bytecode = True
 sys.dont_write_bytecode = True
@@ -17,9 +15,8 @@ fp = "123456"
 sharedTCPjsPath = r"C:\WorkingFolder\CommonFiles\SAM\ComRunScript\ComRunScript.pjs"
 sharedTCPjName = "Prototype"
 
+
 class Entrance:
 
     def __init__(self):
         logger.info("!!!!! class Sample initialized")
-
-
