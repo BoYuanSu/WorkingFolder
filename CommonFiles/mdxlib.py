@@ -11,6 +11,7 @@ class MDXlib:
 
 subKey = r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"
 
+
 def getSoftwareName():
     with _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, subKey) as key:
         KeyInfo = _winreg.QueryInfoKey(key)
@@ -18,6 +19,7 @@ def getSoftwareName():
         for enum in range(KeyInfo[0]):
             installsoftware.append(_winreg.EnumKey(key, enum))
     return installsoftware
+
 
 def test(installsoftware):
     record = []

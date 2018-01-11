@@ -249,7 +249,7 @@ class TETestLauncher(PyTestLauncher):
         self.apiTE = APIsTE(
             self._getSharedmdAttr(sharedmd, ["sharedTCPjsPath"])[0],
             self._getSharedmdAttr(sharedmd, ["sharedTCPjName"])[0],
-            )
+        )
         self._resetAttrs()
         self.itercont = 0
 
@@ -378,7 +378,7 @@ class TETestLauncher(PyTestLauncher):
 
 class APIsTE:
 
-    def __init__(self,  sharedTCPjsPath, sharedTCPjName):
+    def __init__(self, sharedTCPjsPath, sharedTCPjName):
         self.TCPjsPath = sharedTCPjsPath
         self.TCPjName = sharedTCPjName
         self.APP = self.dispatchTE()

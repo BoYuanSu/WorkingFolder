@@ -17,7 +17,6 @@ class TestStage:
     def __init__(self):
 
         # print "initialized test Stage class"
-
         """
         # shared class name for your own Test Group
         # ex. ../CommonFiles/SAM/samlib.py -> class Sample
@@ -31,7 +30,6 @@ class TestStage:
         self.t3 = T3
         self.mt = "Unknown"
         # self.isCustomStage = isCustomStage
-
 
         """
         Option Attributes and Default Value Below:

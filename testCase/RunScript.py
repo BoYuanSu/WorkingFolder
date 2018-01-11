@@ -63,6 +63,7 @@ def main():
     if hasattr(testlauncher, "quitTECOM"):
         testlauncher.quitTECOM()
 
+
 class Run:
 
     @staticmethod
