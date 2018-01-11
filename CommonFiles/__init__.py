@@ -10,11 +10,11 @@ try:
 except ImportError:
     pass
 try:
-    import TE
+    import TEALL
 except ImportError:
     pass
 try:
-    import TE1
+    import TE1by1
 except ImportError:
     pass
 
