@@ -13,3 +13,8 @@ try:
     import TE
 except ImportError:
     pass
+try:
+    import TE1
+except ImportError:
+    pass
+

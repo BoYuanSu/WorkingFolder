@@ -30,7 +30,9 @@ class TestStage:
         self.t2 = T2
         self.t3 = T3
         self.mt = "Unknown"
-        self.isCustomStage = isCustomStage
+        self.unitname = "teself"
+        # self.isCustomStage = isCustomStage
+
 
         """
         Option Attributes and Default Value Below:

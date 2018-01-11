@@ -12,7 +12,7 @@ logger = sharedlib.Logger(__name__)
 
 fu = "paulsu"
 fp = "123456"
-sharedTCPjsPath = r"C:\WorkingFolder\CommonFiles\SAM\ComRunScript\ComRunScript.pjs"
+sharedTCPjsPath = r"C:\WorkingFolder\CommonFiles\TE\ComRunScript\ComRunScript.pjs"
 sharedTCPjName = "Prototype"
 
 
@@ -20,3 +20,4 @@ class Entrance:
 
     def __init__(self):
         logger.info("!!!!! class Sample initialized")
+        self.isRunAllRoutines = True
