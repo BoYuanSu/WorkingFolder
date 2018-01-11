@@ -13,6 +13,10 @@ except ImportError:
 logger = sharedlib.Logger(__name__)
 # logLV = logging.INFO
 
+"""
+You can try to code Father class at comstages.py
+Then inhenrit it from testScipt/testScript.py
+"""
 from comstages import ComTestStage
 
 q = Queue.LifoQueue()
@@ -76,5 +80,4 @@ class FEAInterface:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             traceback.print_exception(exc_type, exc_value, exc_traceback, file=sys.stdout)
             q.put(2, block=False)
-            print "Put Q = 2 at Write_Stats_Data"
             pass

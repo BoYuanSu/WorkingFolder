@@ -15,13 +15,19 @@ import win32com.client
 sys.dont_write_bytecode = True
 
 logLV_ = logging.INFO
+# Default TC log path
 logTC = r"C:\WorkingFolder\testCase\testModel\TCLog.mht"
 
 
 class PyTestLauncher:
 
     def __init__(self, sharedmd, sharedClass, insStages):
-
+        """
+        initialized shared class
+        reset attribute in Stages instance
+        get some information for module shared lib
+        itercont is used for counting excuted stages
+        """
         argsinit = getattr(insStages, "argsInit", ())
         kwargsinit = getattr(insStages, "kwargsInit", {})
         self.insSharedclass = sharedClass(*argsinit, **kwargsinit)
@@ -31,8 +37,16 @@ class PyTestLauncher:
         self.itercont = 0
 
     def run(self):
+        """
+        return Django current stage
+        initialized thread instance and starting testing
+        attributes bellow are used to pass arguments to shared method
+        self.insStages.fnargs
+        self.insStages.fnkwargs
+        """
         logger.info("{0} {1:^25} {0}".format("@" * 20, self._StageName))
         self.syncVMInfo(self._StageName)
+        # Get current stage called method reference
         fn = self._getSharedMthd
         logger.info("{0} Call Method: {1} ...".format("=" * 5, fn.__name__))
         self.thd = TempThread()
@@ -41,7 +55,10 @@ class PyTestLauncher:
         self.thd.join(0)
 
     def wait(self, ditcProcess={}):
-        TimeLimit = getattr(self.insStages, "tlm")
+        """
+        waiting test done
+        """
+        TimeLimit = getattr(self.insStages, "tlm", 0)
         self.isIgnored_TimeOut = True
         if TimeLimit == 0:
             # if Time Limit == 0 means don't check time out
@@ -62,6 +79,12 @@ class PyTestLauncher:
             time.sleep(1)
 
     def checkTestResult(self):
+        """
+        fake check test result method to wrap real check test result
+        return Bug_Proxy to Django
+        reset few Stages instance attributes
+        excuted stages plus one
+        """
         tr = self._wrapCheckTestResult()
         logger.info("{0} Test Result: {1} !".format("=" * 5, tr))
         self.reportBugProxy_(tr)
@@ -70,7 +93,7 @@ class PyTestLauncher:
         return tr
 
     def _wrapCheckTestResult(self):
-        isIgnored_TestResult = getattr(self.insStages, "isIgnoredTr")
+        isIgnored_TestResult = getattr(self.insStages, "isIgnoredTr", False)
         isIgnored_TimeOut = self.isIgnored_TimeOut
         isTimeOut = self.isTimeOut
         logger.debug("""{}
@@ -112,6 +135,7 @@ class PyTestLauncher:
                     return "Successful"
 
     def _getQ(self):
+        # communicate with thread by lifo Q
         logger.debug("~~~~~ Q siez: {}".format(self.q.qsize()))
         if self.q.qsize() == 0:
             return "Empty"
@@ -135,15 +159,6 @@ class PyTestLauncher:
         fu = self.fu
         fp = self.fp
         self.reportBugProxy(t1, t2, t3, mt, sn, tr, se, aip, bcp, fu, fp)
-
-    @property
-    def _getSharedMthd(self):
-        logger.debug("~~~~~ Collecting execute function ...")
-        if not getattr(self.insStages, "fn"):
-            raise Exception("Attribute fn Setted by Stages not Found!")
-        if not hasattr(self.insSharedclass, self.insStages.fn):
-            raise Exception("Function(method) of Sharedclass Called by Stage not Found!")
-        return getattr(self.insSharedclass, self.insStages.fn)
 
     @staticmethod
     def _getSharedmdAttr(sharedmd, sharedmdAttrs):
@@ -173,6 +188,15 @@ class PyTestLauncher:
         logger.info("{0} {1}".format("=" * 5, "Reset InsStages Attritubes ..."))
         for key in CONSTATTR.iterkeys():
             self.insStages.__dict__[key] = CONSTATTR[key]
+
+    @property
+    def _getSharedMthd(self):
+        logger.debug("~~~~~ Collecting execute function ...")
+        if not getattr(self.insStages, "fn"):
+            raise Exception("Attribute fn Setted by Stages not Found!")
+        if not hasattr(self.insSharedclass, self.insStages.fn):
+            raise Exception("Function(method) of Sharedclass Called by Stage not Found!")
+        return getattr(self.insSharedclass, self.insStages.fn)
 
     @property
     def stagesMethod(self):
@@ -254,24 +278,6 @@ class TETestLauncher(PyTestLauncher):
         self._resetAttrs()
         self.itercont = 0
 
-    def quitTECOM(self):
-        self.apiTE.Quit()
-
-    @property
-    def RoutinesIterator(self):
-        Routines = []
-        Iterator = self.apiTE.getRoutinesIterator()
-        Iterator.Reset()
-        while Iterator.HasNext():
-            temp = Iterator.Next
-            if temp.UnitName == self.unitName:
-                Routines.append(temp.Name)
-                logger.info("{} Routine ({}) found ...".format("=" * 5, temp.Name))
-        if len(Routines) == 0:
-            raise Exception("Routines not Found")
-        Routines.sort()
-        return Routines
-
     def run(self):
         logger.info("{0} {1:^25} {0}".format("@" * 20, self._StageName))
         self.syncVMInfo(self._StageName)
@@ -316,7 +322,7 @@ class TETestLauncher(PyTestLauncher):
         tr = self._wrapCheckTestResult(self.apiTE.getResultStatus)
         logger.info("{0} Test Result: {1} !".format("=" * 5, tr))
         self.apiTE.exportResultLog()
-        self.reportBugProxy_(self._StageName, tr)
+        self.reportBugProxy_(tr)
         self._resetAttrs()
         self.itercont += 1
         return tr
@@ -379,20 +385,21 @@ class TETestLauncher(PyTestLauncher):
             return self.insSharedclass.isRunAllRoutines
         return False
 
-    def reportBugProxy_(self, sn, tr):
-        # collect information for Report_Bug_Proxy
-        insStages = self.insStages
-        t1 = insStages.t1
-        t2 = insStages.t2
-        t3 = insStages.t3
-        mt = insStages.mt
-        sn = sn
-        se = ""
-        aip = ""
-        bcp = ""
-        fu = self.fu
-        fp = self.fp
-        self.reportBugProxy(t1, t2, t3, mt, sn, tr, se, aip, bcp, fu, fp)
+    @property
+    def RoutinesIterator(self):
+        Routines = []
+        Iterator = self.apiTE.getRoutinesIterator()
+        Iterator.Reset()
+        while Iterator.HasNext():
+            temp = Iterator.Next
+            if temp.UnitName == self.unitName:
+                Routines.append(temp.Name)
+                logger.info("{} Routine ({}) found ...".format("=" * 5, temp.Name))
+        if len(Routines) == 0:
+            raise Exception("Routines not Found")
+        Routines.sort()
+        self._recordRoutinesName(Routines)
+        return Routines
 
     @property
     def _getSharedMthd(self):
@@ -404,6 +411,7 @@ class TETestLauncher(PyTestLauncher):
             raise Exception("fn formation Error! Concatenate Unit/Routine Name with \".\"")
         return fn[0], fn[1]
 
+    """
     @property
     def stagesMethod(self):
         # Get Custom Stags for Maunal set stages
@@ -425,6 +433,36 @@ class TETestLauncher(PyTestLauncher):
             raise Exception("Stages from TestScript not Found!")
         self._recordStagesName(methods)
         return methods
+    """
+
+    @property
+    def _StageName(self):
+        if self.isRunAllRoutines:
+            return self.calledRoutinesName[self.itercont]
+        return self.calledStagesName[self.itercont]
+
+    def _recordRoutinesName(self, methods):
+        self.calledRoutinesName = methods
+
+    """
+    def reportBugProxy_(self, sn, tr):
+        # collect information for Report_Bug_Proxy
+        insStages = self.insStages
+        t1 = insStages.t1
+        t2 = insStages.t2
+        t3 = insStages.t3
+        mt = insStages.mt
+        sn = sn
+        se = ""
+        aip = ""
+        bcp = ""
+        fu = self.fu
+        fp = self.fp
+        self.reportBugProxy(t1, t2, t3, mt, sn, tr, se, aip, bcp, fu, fp)
+    """`
+
+    def quitTECOM(self):
+        self.apiTE.Quit()
 
 
 class APIsTE:
@@ -470,7 +508,7 @@ class APIsTE:
     def IsRunning(self):
         return self.APP.Integration.IsRunning()
 
-    def stopRunning(msg="Time Out"):
+    def stopRunning(self, msg="Time Out"):
         logger.error("{0} Stop Running Routine: {1}".format("!" * 5, msg))
         self.APP.Integration.Halt(msg)
 

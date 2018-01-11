@@ -1,7 +1,6 @@
 import sys
 
 sys.dont_write_bytecode = True
-sys.dont_write_bytecode = True
 try:
     from CommonFiles import sharedlib
 except ImportError:
@@ -12,6 +11,7 @@ logger = sharedlib.Logger(__name__)
 
 fu = "paulsu"
 fp = "123456"
+# Set your shared TC Project Suite path and TC Project Name
 sharedTCPjsPath = r"C:\WorkingFolder\CommonFiles\TE\ComRunScript\ComRunScript.pjs"
 sharedTCPjName = "Prototype"
 
