@@ -14,7 +14,8 @@ import win32com.client
 
 sys.dont_write_bytecode = True
 
-logLV_ = logging.DEBUG
+logLV_ = logging.INFO
+logTC = r"C:\WorkingFolder\testCase\testModel\TCLog.mht"
 
 
 class PyTestLauncher:
@@ -272,13 +273,53 @@ class TETestLauncher(PyTestLauncher):
         return Routines
 
     def run(self):
-        pass
+        logger.info("{0} {1:^25} {0}".format("@" * 20, self._StageName))
+        self.syncVMInfo(self._StageName)
+        unitName, Routine = self._getSharedMthd
+        logger.info("{0} Call Method: {1}::{2} ...".format("=" * 5, unitName, Routine))
+        argsList = self.insStages.fnargs
+        try:
+            self.isCallRoutineFail = False
+            if argsList:
+                self.apiTE.runRoutine(unitName, Routine)
+            else:
+                self.apiTE.runRoutineEx(unitName, Routine, argsList)
+        except Exception:
+            self.isCallRoutineFail = True
 
     def wait(self):
-        pass
+        TimeLimit = getattr(self.insStages, "tlm")
+        self.isIgnored_TimeOut = True
+        if TimeLimit == 0:
+            # if Time Limit == 0 means don't check time out
+            logger.info("===== Disable Checking TimeOut")
+        else:
+            self.isIgnored_TimeOut = False
+            logger.info("{} Enable Checking TimeOut: {} min(s)".format("=" * 5, TimeLimit / 60))
+
+        tcont = 0
+        self.isTimeOut = False
+        while self.apiTE.IsRunning:
+            if tcont > TimeLimit and TimeLimit:
+                logger.info("!!!!! Time Out ...")
+                self.apiTE.stopRunning()
+                self.isTimeOut = True
+                break
+            tcont += 1
+            time.sleep(1)
 
     def checkTestResult(self):
-        pass
+        if self.isCallRoutineFail:
+            logger.error("!!!!! Call Routine Failed ...")
+            self.reportBugProxy_(self._StageName, "Call Routine Failed")
+            return "Call Routine Failed"
+        tr = self._wrapCheckTestResult(self.apiTE.getResultStatus)
+        logger.info("{0} Test Result: {1} !".format("=" * 5, tr))
+        self.apiTE.exportResultLog()
+        self.reportBugProxy_(self._StageName, tr)
+        self._resetAttrs()
+        self.itercont += 1
+        return tr
 
     def _wrapCheckTestResult(self, iResult):
         isIgnored_TestResult = getattr(self.insStages, "isIgnoredTr")
@@ -324,13 +365,19 @@ class TETestLauncher(PyTestLauncher):
             self.apiTE.runRoutine(self.unitName, Routine)
             while True:
                 time.sleep(1)
-                if not self.apiTE.isRunningRoutine:
+                if not self.apiTE.IsRunning:
                     break
             tr = self._wrapCheckTestResult(self.apiTE.getResultStatus)
             self.reportBugProxy_(Routine, tr)
             logger.info("{0} Test Result: {1} !".format("=" * 5, tr))
             if tr != "Successful":
                 break
+
+    @property
+    def isRunAllRoutines(self):
+        if hasattr(self.insSharedclass, "isRunAllRoutines"):
+            return self.insSharedclass.isRunAllRoutines
+        return False
 
     def reportBugProxy_(self, sn, tr):
         # collect information for Report_Bug_Proxy
@@ -348,10 +395,14 @@ class TETestLauncher(PyTestLauncher):
         self.reportBugProxy(t1, t2, t3, mt, sn, tr, se, aip, bcp, fu, fp)
 
     @property
-    def isRunAllRoutines(self):
-        if hasattr(self.insSharedclass, "isRunAllRoutines"):
-            return self.insSharedclass.isRunAllRoutines
-        return False
+    def _getSharedMthd(self):
+        logger.debug("~~~~~ Collecting execute function ...")
+        if not getattr(self.insStages, "fn"):
+            raise Exception("Attribute fn Setted by Stages not Found!")
+        fn = self.insStages.fn.split(".")
+        if len(fn) != 2:
+            raise Exception("fn formation Error! Concatenate Unit/Routine Name with \".\"")
+        return fn[0], fn[1]
 
     @property
     def stagesMethod(self):
@@ -389,6 +440,7 @@ class APIsTE:
     def dispatchTE():
         logger.debug("~~~~~ Dispatch TE ...")
         try:
+            time.sleep(1)
             return win32com.client.dynamic.Dispatch("TestExecute.TestExecuteApplication")
         except Exception:
             logger.debug("~~~~~ Dispatch TE Failed ...")
@@ -411,17 +463,36 @@ class APIsTE:
     def runRoutine(self, unitName, Routine):
         self.APP.Integration.RunRoutine(self.TCPjName, unitName, Routine)
 
+    def runRoutineEx(self, unitName, Routine, argsList):
+        self.APP.Integration.RunRoutineEx(self.TCPjName, unitName, Routine, list(argsList))
+
     @property
-    def isRunningRoutine(self):
+    def IsRunning(self):
         return self.APP.Integration.IsRunning()
+
+    def stopRunning(msg="Time Out"):
+        logger.error("{0} Stop Running Routine: {1}".format("!" * 5, msg))
+        self.APP.Integration.Halt(msg)
 
     @property
     def getResultStatus(self):
         return self.APP.Integration.GetLastResultDescription().Status
 
+    def exportResultLog(self, path=logTC):
+        if not os.path.isdir(os.path.dirname(path)):
+            logger.warning("{} Log Path is not illegal")
+        self.APP.Integration.ExportResults(path)
+
     def Quit(self):
+        while True:
+            if self.APP.Integration.CloseProjectSuite():
+                logger.debug("~~~~~ Close TC ProjectSuit ...")
+                break
         logger.debug("~~~~~ Quit TE ...")
         self.APP.Quit()
+        while True:
+            if "TestExecute.exe" not in os.popen("tasklist").read():
+                break
 
 
 class TempThread(threading.Thread):

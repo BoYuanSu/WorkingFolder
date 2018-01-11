@@ -19,4 +19,4 @@ sharedTCPjName = "Prototype"
 class Entrance_:
 
     def __init__(self):
-        logger.info("!!!!! class Sample initialized")
+        logger.info("!!!!! class Entrance_ initialized")

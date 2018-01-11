@@ -1,7 +1,7 @@
 T1 = "T1"
 T2 = "T2"
 T3 = "Test_00_te"
-sharedClassName = "Entrance"
+sharedClassName = "Entrance_"
 argsStage = ()
 kwargsStage = {}
 isCustomStage = True
@@ -55,7 +55,6 @@ class TestStage:
         self.mt = "Calculator"
         # self.isIgnoredTr = True
         # self.tlm = 1
-        self.un = "teimport"
         self.fn = "teimport.runCalc"
         self.assertattr = "Successful"
         pass
@@ -64,16 +63,24 @@ class TestStage:
         self.mt = "Notepad"
         # self.isIgnoredTr = True
         # self.tlm = 1
-        self.un = "teself"
-        self.fn = "runNotepad"
+        self.fn = "teself.runNotepad1"
         self.assertattr = "Successful"
         pass
 
     def Stage_003_Calculator(self):
-        self.mt = "None"
-        self.isIgnoredTr = True
-        self.un = "teimport"
-        self.fn = "runCalc"
+        self.mt = "Calculator"
+        # self.isIgnoredTr = True
+        # self.tlm = 1
+        self.fn = "teimport.runCalc"
+        self.assertattr = "Successful"
+        # print("---------------------------------------- assertattr pass")
+        pass
+
+    def Stage_004_Notepad(self):
+        self.mt = "Notepad"
+        # self.isIgnoredTr = True
+        # self.tlm = 1
+        self.fn = "teself.runNotepad1"
         self.assertattr = "Successful"
         # print("---------------------------------------- assertattr pass")
         pass
