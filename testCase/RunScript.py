@@ -44,6 +44,9 @@ def main():
 
     # testlauncher = sharedlib.PyTestLauncher(sharedmd, sharedclass, insStages)
     testlauncher = sharedlib.TETestLauncher(sharedmd, sharedclass, insStages)
+    if testlauncher.isRunAllRoutines:
+        testlauncher.runAllRoutines()
+        return
 
     for stage in testlauncher.stagesMethod:
         stage()
@@ -57,7 +60,8 @@ def main():
         # if tr != testlauncher.insStages.assertattr:
         #     raise AssertionError
         # logger.debug("{0} Test Result: {1} !".format("=" * 5, "Pass"))
-
+    if hasattr(testlauncher, "quitTECOM"):
+        testlauncher.quitTECOM()
 
 class Run:
 
