@@ -42,11 +42,13 @@ def main():
 
     sharedmd, sharedclass = Run.getSharedModule(insStages.sharedClassName)
 
-    # testlauncher = sharedlib.PyTestLauncher(sharedmd, sharedclass, insStages)
-    testlauncher = sharedlib.TETestLauncher(sharedmd, sharedclass, insStages)
-    if testlauncher.isRunAllRoutines:
-        testlauncher.runAllRoutines()
+    if Run.isTCTest(sharedmd):
+        testlauncher = sharedlib.TETestLauncher(sharedmd, sharedclass, insStages)
+        if testlauncher.isRunAllRoutines:
+            testlauncher.runAllRoutines()
         return
+    else:
+        testlauncher = sharedlib.PyTestLauncher(sharedmd, sharedclass, insStages)
 
     for stage in testlauncher.stagesMethod:
         stage()
@@ -128,6 +130,12 @@ class Run:
                 for cls in clses:
                     if cls[0] == clsname:
                         return m[1], cls[1]
+
+    @staticmethod
+    def isTCTest(sharedmd):
+        if hasattr(sharedmd, "sharedTCProject") and getattr(sharedmd, sharedTCProject, ""):
+            return True
+        return False
 
 
 if __name__ == "__main__":

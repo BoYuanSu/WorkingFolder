@@ -459,7 +459,7 @@ class TETestLauncher(PyTestLauncher):
         fu = self.fu
         fp = self.fp
         self.reportBugProxy(t1, t2, t3, mt, sn, tr, se, aip, bcp, fu, fp)
-    """`
+    """
 
     def quitTECOM(self):
         self.apiTE.Quit()
