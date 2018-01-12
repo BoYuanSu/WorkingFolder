@@ -374,7 +374,7 @@ class TETestLauncher(PyTestLauncher):
                 if not self.apiTE.IsRunning:
                     break
             tr = self._wrapCheckTestResult(self.apiTE.getResultStatus)
-            self.reportBugProxy_(Routine, tr)
+            self.reportBugProxy_(tr)
             logger.info("{0} Test Result: {1} !".format("=" * 5, tr))
             if tr != "Successful":
                 break
@@ -484,6 +484,8 @@ class APIsTE:
             logger.debug("~~~~~ Dispatch TE Failed ...")
 
     def openTCPjs(self):
+        if not os.path.isfile(self.TCPjsPath):
+            raise Exception("Invalid TC Project Suite Path")
         logger.debug("{} Open TC ProjectSuite: {} ...".format(
             "~" * 5,
             os.path.basename(self.TCPjsPath)))

@@ -46,7 +46,7 @@ def main():
         testlauncher = sharedlib.TETestLauncher(sharedmd, sharedclass, insStages)
         if testlauncher.isRunAllRoutines:
             testlauncher.runAllRoutines()
-        return
+            return
     else:
         testlauncher = sharedlib.PyTestLauncher(sharedmd, sharedclass, insStages)
 
@@ -133,7 +133,7 @@ class Run:
 
     @staticmethod
     def isTCTest(sharedmd):
-        if hasattr(sharedmd, "sharedTCProject") and getattr(sharedmd, sharedTCProject, ""):
+        if hasattr(sharedmd, "sharedTCPjsPath") and getattr(sharedmd, "sharedTCPjsPath", ""):
             return True
         return False
 
