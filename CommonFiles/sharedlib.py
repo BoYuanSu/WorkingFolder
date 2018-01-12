@@ -18,7 +18,7 @@ sys.dont_write_bytecode = True
 
 logLV_ = logging.INFO
 # Default TC log path
-logTC = r"C:\WorkingFolder\testCase\testModel\TCLog.mht"
+logTC = r"C:\WorkingFolder\testCase\testModel\TCLog_{0}_{1}.mht"
 
 
 class PyTestLauncher:
@@ -37,7 +37,7 @@ class PyTestLauncher:
         self._resetAttrs()
         self.q, self.fu, self.fp = self._getSharedmdAttr(sharedmd, ["q", "fu", "fp"])
         self.itercont = 0
-        self.totalTimeLimit = 30
+        self.totalTimeLimit = getCaseTimeLimit()
         self.totalTimecont = 0
 
     def run(self):
@@ -66,7 +66,7 @@ class PyTestLauncher:
         self.isIgnored_TimeOut = True
         if TimeLimit == 0:
             # if Time Limit == 0 means don't check time out
-            logger.info("===== Disable Checking TimeOut")
+            logger.debug("!!!!! Disable Checking TimeOut")
         else:
             self.isIgnored_TimeOut = False
             logger.info("{} Enable Checking TimeOut: {} min(s)".format("=" * 5, TimeLimit / 60))
@@ -311,7 +311,7 @@ class TETestLauncher(PyTestLauncher):
         self.isIgnored_TimeOut = True
         if TimeLimit == 0:
             # if Time Limit == 0 means don't check time out
-            logger.info("===== Disable Checking TimeOut")
+            logger.debug("!!!!! Disable Checking TimeOut")
         else:
             self.isIgnored_TimeOut = False
             logger.info("{} Enable Checking TimeOut: {} min(s)".format("=" * 5, TimeLimit / 60))
@@ -324,7 +324,7 @@ class TETestLauncher(PyTestLauncher):
                 self.apiTE.stopRunning()
                 self.isTimeOut = True
                 break
-            if self.totalTimecont > self.totalTimeLimit:
+            if self.totalTimecont > self.totalTimeLimit and self.totalTimeLimit:
                 self.isReachCaseTimeLimit = True
                 self.apiTE.stopRunning("Reach Time Limit of Case")
                 break
@@ -339,7 +339,8 @@ class TETestLauncher(PyTestLauncher):
             return "Call Routine Failed"
         tr = self._wrapCheckTestResult(self.apiTE.getResultStatus)
         logger.info("{0} Test Result: {1} !".format("=" * 5, tr))
-        self.apiTE.exportResultLog()
+        fmt = logTC.format(getTestListID(), self.itercont + 1)
+        self.apiTE.exportResultLog(fmt)
         self.reportBugProxy_(tr)
         if tr == "Reach Time Limit of Case":
             return tr
@@ -506,6 +507,7 @@ class APIsTE:
     def exportResultLog(self, path=logTC):
         if not os.path.isdir(os.path.dirname(path)):
             logger.warning("{} Log Path is not illegal")
+            return
         self.APP.Integration.ExportResults(path)
 
     def Quit(self):
@@ -613,12 +615,26 @@ def Logger(name=__name__, logLV=logging.INFO, pathTestlog=""):
     return logger
 
 
+def getTestListID():
+    try:
+        db = AccessQAXenDB.AccessQAXenDB()
+        return db.CurrentTestRecord().id
+    except Exception:
+        return
+
+
 def getCaseTimeLimit():
     try:
         db = AccessQAXenDB.AccessQAXenDB()
     except Exception:
-        return
+        return 0
     return int(db.GetTestCaseExeTime())
 
 
 logger = Logger(logLV=logLV_)
+
+def main():
+    print type(getTestListID())
+
+if __name__ == '__main__':
+    main()
