@@ -365,7 +365,7 @@ class TETestLauncher(PyTestLauncher):
         self.isTimeOut = False
         self.isIgnored_TimeOut = True
 
-        for Routine in self.RoutinesIterator:
+        for Routine in self._routinesIterator:
             logger.info("{0} {1:^25} {0}".format("@" * 20, Routine))
             self.syncVMInfo(Routine)
             self.apiTE.runRoutine(self.unitName, Routine)
@@ -386,7 +386,7 @@ class TETestLauncher(PyTestLauncher):
         return False
 
     @property
-    def RoutinesIterator(self):
+    def _routinesIterator(self):
         Routines = []
         Iterator = self.apiTE.getRoutinesIterator()
         Iterator.Reset()
@@ -411,30 +411,6 @@ class TETestLauncher(PyTestLauncher):
             raise Exception("fn formation Error! Concatenate Unit/Routine Name with \".\"")
         return fn[0], fn[1]
 
-    """
-    @property
-    def stagesMethod(self):
-        # Get Custom Stags for Maunal set stages
-        isCustomStage = getattr(self.insStages, "isCustomStage", False)
-        if isCustomStage:
-            if not hasattr(self.insStages, "_customStage"):
-                raise Exception("_customStage not Found")
-            methods = getattr(self.insStages, "_customStage")()
-            self._recordStagesName(methods)
-            return methods
-
-        # Get methods from InsStags obj  which name was prefix "Stags_"
-        methods = []
-        methodsTup = inspect.getmembers(self.insStages, inspect.ismethod)
-        for mthdtup in methodsTup:
-            if mthdtup[0].startswith("Stage_"):
-                methods.append(mthdtup[1])
-        if len(methods) == 0:
-            raise Exception("Stages from TestScript not Found!")
-        self._recordStagesName(methods)
-        return methods
-    """
-
     @property
     def _StageName(self):
         if self.isRunAllRoutines:
@@ -443,23 +419,6 @@ class TETestLauncher(PyTestLauncher):
 
     def _recordRoutinesName(self, methods):
         self.calledRoutinesName = methods
-
-    """
-    def reportBugProxy_(self, sn, tr):
-        # collect information for Report_Bug_Proxy
-        insStages = self.insStages
-        t1 = insStages.t1
-        t2 = insStages.t2
-        t3 = insStages.t3
-        mt = insStages.mt
-        sn = sn
-        se = ""
-        aip = ""
-        bcp = ""
-        fu = self.fu
-        fp = self.fp
-        self.reportBugProxy(t1, t2, t3, mt, sn, tr, se, aip, bcp, fu, fp)
-    """
 
     def quitTECOM(self):
         self.apiTE.Quit()
