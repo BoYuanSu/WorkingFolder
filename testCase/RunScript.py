@@ -56,11 +56,13 @@ def main():
         testlauncher.wait()
         tr = testlauncher.checkTestResult()
         timerecord.addTimeStamp(stage.__name__)
-        if tr != "Successful":
+        # if tr != "Successful":
+        #     break
+        if tr == "Reach Time Limit of Case":
             break
         # Used for unittest
-        # if tr != testlauncher.insStages.assertattr:
-        #     raise AssertionError
+        if tr != testlauncher.insStages.assertattr:
+            raise AssertionError
         # logger.debug("{0} Test Result: {1} !".format("=" * 5, "Pass"))
     if hasattr(testlauncher, "quitTECOM"):
         testlauncher.quitTECOM()
