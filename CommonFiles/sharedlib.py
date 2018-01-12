@@ -499,7 +499,7 @@ class APIsTE:
     def getResultStatus(self):
         try:
             return self.APP.Integration.GetLastResultDescription().Status
-        except:
+        except AttributeError:
             logger.warning("!!!!! Get TC Result Description Failed")
             return 2
 
@@ -611,6 +611,7 @@ def Logger(name=__name__, logLV=logging.INFO, pathTestlog=""):
     logger.addHandler(file_handler)
     logger.addHandler(stream_handler)
     return logger
+
 
 def getCaseTimeLimit():
     try:
