@@ -11,6 +11,8 @@ import win32com.client
 # from subprocess import PIPE
 
 # import TestFile_BackUp as backuptool
+import AccessQAXenDB
+
 
 sys.dont_write_bytecode = True
 

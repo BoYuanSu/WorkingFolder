@@ -8,3 +8,4 @@ ComRunScript
 *.py.bak
 Visualizer
 *.mht
+AccessQAXenDB.py
