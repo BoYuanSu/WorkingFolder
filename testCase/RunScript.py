@@ -15,15 +15,27 @@ sys.path.append("..")
 
 from CommonFiles import sharedlib
 
-from CommonFiles.FEA import fealib
-# from CommonFiles.SAM import samlib
+"""
+import your Module CommonFiles/TestScript here
+pass module/module class/TestScript instance reference into sharedlib.TETestLauncher
+
+from CommonFiles.SAM import samlib
+from testScript import test_25_mkxl
+
+insStages = test_25_mkxl.TestStage()
+sharedmd = samlib
+sharedclass = samlib.Sample
+testlauncher = sharedlib.TETestLauncher(sharedmd, sharedclass, insStages)
+"""
+# from CommonFiles.FEA import fealib
+from CommonFiles.SAM import samlib
 # from CommonFiles.TE1by1 import te1by1lib
 # from CommonFiles.TEALL import tealllib
 
-from testScript import testscript
+# from testScript import testscript
 from testScript import test_25_mkxl
-from testScript import test_00_teall
-from testScript import test_00_te1by1
+# from testScript import test_00_teall
+# from testScript import test_00_te1by1
 
 
 # For Test Mode Setting(Test or not, 1:Yes, 0:No)
@@ -48,11 +60,11 @@ def main():
     Doing main test
     """
     # insStages = Run.getStageClass()
-    insStages = testscript.TestStage()
+    insStages = test_25_mkxl.TestStage()
 
     # sharedmd, sharedclass = Run.getSharedModule(insStages.sharedClassName)
-    sharedmd = fealib
-    sharedclass = fealib.FEAInterface
+    sharedmd = samlib
+    sharedclass = samlib.Sample
 
     if Run.isTCTest(sharedmd):
         testlauncher = sharedlib.TETestLauncher(sharedmd, sharedclass, insStages)
