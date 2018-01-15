@@ -13,7 +13,12 @@ except WindowsError:
     pass
 sys.path.append("..")
 
-from CommonFiles import *
+# from CommonFiles import sharedlib
+# from CommonFiles.FEA import fealib
+# from CommonFiles.SAM import samlib
+# from CommonFiles.TE1by1 import te1by1lib
+# from CommonFiles.TEALL import tealllib
+
 from testScript import *
 
 
@@ -46,6 +51,7 @@ def main():
         testlauncher = sharedlib.TETestLauncher(sharedmd, sharedclass, insStages)
         if testlauncher.isRunAllRoutines:
             testlauncher.runAllRoutines()
+            testlauncher.quitTECOM()
             return
     else:
         testlauncher = sharedlib.PyTestLauncher(sharedmd, sharedclass, insStages)
@@ -61,8 +67,8 @@ def main():
         if tr == "Reach Time Limit of Case":
             break
         # Used for unittest
-        if tr != testlauncher.insStages.assertattr:
-            raise AssertionError
+        # if tr != testlauncher.insStages.assertattr:
+        #     raise AssertionError
         # logger.debug("{0} Test Result: {1} !".format("=" * 5, "Pass"))
     if hasattr(testlauncher, "quitTECOM"):
         testlauncher.quitTECOM()

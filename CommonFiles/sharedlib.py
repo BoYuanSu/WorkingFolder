@@ -633,8 +633,10 @@ def getCaseTimeLimit():
 
 logger = Logger(logLV=logLV_)
 
+
 def main():
     print type(getTestListID())
+
 
 if __name__ == '__main__':
     main()
