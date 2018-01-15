@@ -37,7 +37,7 @@ class PyTestLauncher:
         self._resetAttrs()
         self.q, self.fu, self.fp = self._getSharedmdAttr(sharedmd, ["q", "fu", "fp"])
         self.itercont = 0
-        self.totalTimeLimit = getCaseTimeLimit()
+        self.totalTimeLimit = 0
         self.totalTimecont = 0
 
     def run(self):
@@ -288,7 +288,7 @@ class TETestLauncher(PyTestLauncher):
             self._getSharedmdAttr(sharedmd, ["sharedTCPjName"])[0])
         self._resetAttrs()
         self.itercont = 0
-        self.totalTimeLimit = 5
+        self.totalTimeLimit = 0
         self.totalTimecont = 0
 
     def run(self):
@@ -444,6 +444,7 @@ class TETestLauncher(PyTestLauncher):
         self.calledRoutinesName = methods
 
     def quitTECOM(self):
+        logger.info("===== Quit TE COM ...")
         self.apiTE.Quit()
 
 
