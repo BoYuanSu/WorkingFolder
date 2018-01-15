@@ -134,7 +134,7 @@ class Run:
                 continue
             # print "{:<20} :: {}".format(name, obj)
             # print os.path.dirname(obj.__file__)
-            if r":\WorkingFolder\testCase\testScript" in os.path.dirname(obj.__file__):
+            if r"\testCase\testScript" in os.path.dirname(obj.__file__):
                 testclass = inspect.getmembers(obj, inspect.isclass)
         if not len(testclass):
             raise Exception("TestStage not found")
@@ -183,7 +183,7 @@ if __name__ == "__main__":
     Run.findLoggerFilehdlr()
 
     os.system("copy {0} {0}bak /y".format(r".\testModel\TimeLog.log"))
-    # os.system("del {} /s /q".format(r".\testModel\TimeLog.log"))
+    os.system("del {} /s /q".format(r".\testModel\TimeLog.log"))
 
     if iTestMode == 0:
         TestFile_BackUp

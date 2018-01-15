@@ -12,7 +12,7 @@ logger = sharedlib.Logger(__name__)
 fu = "paulsu"
 fp = "123456"
 # Set your shared TC Project Suite path and TC Project Name
-sharedTCPjsPath = r"C:\WorkingFolder\CommonFiles\TE1by1\ComRunScript\ComRunScript.pjs"
+sharedTCPjsPath = r"..\CommonFiles\TE1by1\ComRunScript\ComRunScript.pjs"
 sharedTCPjName = "Prototype"
 
 

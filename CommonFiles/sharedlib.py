@@ -11,14 +11,18 @@ import win32com.client
 # from subprocess import PIPE
 
 # import TestFile_BackUp as backuptool
-import AccessQAXenDB
+try:
+    import AccessQAXenDB
+except ImportError:
+    pass
 
 
 sys.dont_write_bytecode = True
 
+cwd = os.getcwd()
 logLV_ = logging.INFO
 # Default TC log path
-logTC = r"C:\WorkingFolder\testCase\testModel\TCLog_{0}_{1}.mht"
+logTC = os.path.join(cwd, r"..\testCase\testModel\TCLog_{0}_{1}.mht")
 
 
 class PyTestLauncher:
@@ -467,6 +471,7 @@ class APIsTE:
             logger.debug("~~~~~ Dispatch TE Failed ...")
 
     def openTCPjs(self):
+        self.TCPjsPath = os.path.join(cwd, self.TCPjsPath)
         if not os.path.isfile(self.TCPjsPath):
             raise Exception("Invalid TC Project Suite Path")
         logger.debug("{} Open TC ProjectSuite: {} ...".format(
@@ -566,7 +571,7 @@ class Timer:
         logger.debug(("Add Time Point: {}".format(TimePointName)))
 
     def OutputTimeLog(self):
-        self.path = r"C:\WorkingFolder\testCase\testModel\TimeLog.log"
+        self.path = r"..\testCase\testModel\TimeLog.log"
         if not os.path.isfile(self.path):
             logger.info("TimeLog.txt path not exist!")
             return
