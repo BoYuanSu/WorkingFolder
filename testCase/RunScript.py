@@ -27,13 +27,13 @@ sharedmd = samlib
 sharedclass = samlib.Sample
 testlauncher = sharedlib.TETestLauncher(sharedmd, sharedclass, insStages)
 """
-# from CommonFiles.FEA import fealib
-from CommonFiles.SAM import samlib
+from CommonFiles.FEA import fealib
+# from CommonFiles.SAM import samlib
 # from CommonFiles.TE1by1 import te1by1lib
 # from CommonFiles.TEALL import tealllib
 
-# from testScript import testscript
-from testScript import test_25_mkxl
+from testScript import testscript
+# from testScript import test_25_mkxl
 # from testScript import test_00_teall
 # from testScript import test_00_te1by1
 
@@ -60,11 +60,11 @@ def main():
     Doing main test
     """
     # insStages = Run.getStageClass()
-    insStages = test_25_mkxl.TestStage()
+    insStages = testscript.TestStage()
 
     # sharedmd, sharedclass = Run.getSharedModule(insStages.sharedClassName)
-    sharedmd = samlib
-    sharedclass = samlib.Sample
+    sharedmd = fealib
+    sharedclass = fealib.FEAInterface
 
     if Run.isTCTest(sharedmd):
         testlauncher = sharedlib.TETestLauncher(sharedmd, sharedclass, insStages)
@@ -95,6 +95,7 @@ def main():
 
 class Run:
 
+    """
     @staticmethod
     def findLoggerFilehdlr():
         print "close logger handlers"
@@ -123,6 +124,7 @@ class Run:
             # print "=" * 10 + "> delete hdlr " + str(ref.__name__)
         except AttributeError:
             pass
+    """
 
     @staticmethod
     def getStageClass():
@@ -169,7 +171,7 @@ if __name__ == "__main__":
 
     timerecord = sharedlib.Timer()
 
-    logger = sharedlib.Logger(__name__, logLV=logLV, pathTestlog=pathTestlog)
+    logger = sharedlib.Logger(__name__, logLV=logLV)
 
     if iTestMode == 0:
         processes = sharedlib.ProcessSnapShot()
@@ -180,7 +182,8 @@ if __name__ == "__main__":
 
     timerecord.OutputTimeLog()
 
-    Run.findLoggerFilehdlr()
+    sharedlib.findLoggerFilehdlr(globals())
+    sharedlib.closeHdlr(logger)
 
     os.system("copy {0} {0}bak /y".format(r".\testModel\TimeLog.log"))
     os.system("del {} /s /q".format(r".\testModel\TimeLog.log"))

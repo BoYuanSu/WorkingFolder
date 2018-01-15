@@ -7,6 +7,7 @@ import threading
 # import ConfigParser
 # import json
 import time
+import types
 import win32com.client
 # from subprocess import PIPE
 
@@ -22,7 +23,8 @@ sys.dont_write_bytecode = True
 cwd = os.getcwd()
 logLV_ = logging.INFO
 # Default TC log path
-logTC = os.path.join(cwd, r"..\testCase\testModel\TCLog_{0}_{1}.mht")
+logTC = os.path.join(cwd, r".\testModel\TCLog_{0}_{1}.mht")
+logPy = r".\testModel\TimeLog.log"
 
 
 class PyTestLauncher:
@@ -600,7 +602,7 @@ def detectCrash():
 def Logger(name=__name__, logLV=logging.INFO, pathTestlog=""):
 
     if not pathTestlog:
-        pathTestlog = r".\testModel\TimeLog.log"
+        pathTestlog = logPy
     logger = logging.getLogger(name)
     logger.setLevel(logLV)
 
@@ -635,6 +637,39 @@ def getCaseTimeLimit():
     except Exception:
         return 0
     return int(db.GetTestCaseExeTime())
+
+
+def findLoggerFilehdlr(dictGlobals):
+    print "close logger handlers"
+    for name, obj in dictGlobals.items():
+        if not isinstance(obj, types.ModuleType):
+            continue
+        if "..\CommonFiles" not in os.path.dirname(str(obj)):
+            continue
+        # print "{:<20} :: {}".format(name, obj)
+        modules = inspect.getmembers(obj, inspect.ismodule)
+        for m in modules:
+            # print m[0]
+            closeHdlr(m[1])
+        closeHdlr(obj)
+
+    # for hdlr in logger.handlers:
+    #     hdlr.close()
+    with open(logPy, "a") as log:
+        log.write("{0} End log {0}\n".format("=" * 50))
+
+
+def closeHdlr(ref):
+    try:
+        if isinstance(ref, logging.Logger):
+            tmplogger = ref
+        else:
+            tmplogger = ref.logger
+        for handler in tmplogger.handlers:
+            handler.close()
+        # print "=" * 10 + "> delete hdlr " + str(ref.__name__)
+    except AttributeError:
+        pass
 
 
 logger = Logger(logLV=logLV_)
