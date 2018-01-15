@@ -573,7 +573,7 @@ class Timer:
         logger.debug(("Add Time Point: {}".format(TimePointName)))
 
     def OutputTimeLog(self):
-        self.path = r"..\testCase\testModel\TimeLog.log"
+        self.path = r".\testModel\TimeLog.log"
         if not os.path.isfile(self.path):
             logger.info("TimeLog.txt path not exist!")
             return
@@ -583,6 +583,49 @@ class Timer:
                 fmt = "{tpn:<30}: {t:>6.2f} sec\n"
                 data.append(fmt.format(tpn=self.tpn[i], t=self.t[i]))
             file.writelines(data)
+
+
+class SearchRef:
+
+    @staticmethod
+    def getStageClass(dictGlobals):
+        testclass = []
+        for name, obj in dictGlobals.items():
+            if not isinstance(obj, types.ModuleType):
+                continue
+            if not hasattr(obj, "__file__"):
+                continue
+            # print "{:<20} :: {}".format(name, obj)
+            # print os.path.dirname(obj.__file__)
+            if r"\testCase\testScript" in os.path.dirname(obj.__file__):
+                testclass = inspect.getmembers(obj, inspect.isclass)
+        if not len(testclass):
+            raise Exception("TestStage not found")
+        for cls in testclass:
+            if cls[0] == "TestStage":
+                return cls[1]()
+
+    @staticmethod
+    def getSharedModule(dictGlobals, clsname):
+        for name, obj in dictGlobals.items():
+            if not isinstance(obj, types.ModuleType):
+                continue
+            if "..\CommonFiles" not in os.path.dirname(str(obj)):
+                continue
+            # Get Modules import from ..\CommonFildes
+            modules = inspect.getmembers(obj, inspect.ismodule)
+            # iter over all class in modules and get matched classname
+            for m in modules:
+                clses = inspect.getmembers(m[1], inspect.isclass)
+                for cls in clses:
+                    if cls[0] == clsname:
+                        return m[1], cls[1]
+
+    @staticmethod
+    def isTCTest(sharedmd):
+        if hasattr(sharedmd, "sharedTCPjsPath") and getattr(sharedmd, "sharedTCPjsPath", ""):
+            return True
+        return False
 
 
 def checkTasks():
@@ -653,8 +696,6 @@ def findLoggerFilehdlr(dictGlobals):
             closeHdlr(m[1])
         closeHdlr(obj)
 
-    # for hdlr in logger.handlers:
-    #     hdlr.close()
     with open(logPy, "a") as log:
         log.write("{0} End log {0}\n".format("=" * 50))
 

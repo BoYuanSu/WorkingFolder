@@ -59,14 +59,14 @@ def main():
     """
     Doing main test
     """
-    # insStages = Run.getStageClass()
+    # insStages = SearchRef.getStageClass(globals())
     insStages = testscript.TestStage()
 
-    # sharedmd, sharedclass = Run.getSharedModule(insStages.sharedClassName)
+    # sharedmd, sharedclass = SearchRef.getSharedModule(globals(), insStages.sharedClassName)
     sharedmd = fealib
     sharedclass = fealib.FEAInterface
 
-    if Run.isTCTest(sharedmd):
+    if sharedlib.SearchRef.isTCTest(sharedmd):
         testlauncher = sharedlib.TETestLauncher(sharedmd, sharedclass, insStages)
         if testlauncher.isRunAllRoutines:
             testlauncher.runAllRoutines()
@@ -93,80 +93,6 @@ def main():
         testlauncher.quitTECOM()
 
 
-class Run:
-
-    """
-    @staticmethod
-    def findLoggerFilehdlr():
-        print "close logger handlers"
-        for name, obj in globals().items():
-            if not isinstance(obj, types.ModuleType):
-                continue
-            if "..\CommonFiles" not in os.path.dirname(str(obj)):
-                continue
-            # print "{:<20} :: {}".format(name, obj)
-            modules = inspect.getmembers(obj, inspect.ismodule)
-            for m in modules:
-                # print m[0]
-                Run.closeHdlr(m[1])
-            Run.closeHdlr(obj)
-
-        for hdlr in logger.handlers:
-            hdlr.close()
-        with open(pathTestlog, "a") as log:
-            log.write("{0} End log {0}\n".format("=" * 50))
-
-    @staticmethod
-    def closeHdlr(ref):
-        try:
-            for handler in ref.logger.handlers:
-                handler.close()
-            # print "=" * 10 + "> delete hdlr " + str(ref.__name__)
-        except AttributeError:
-            pass
-    """
-
-    @staticmethod
-    def getStageClass():
-        testclass = []
-        for name, obj in globals().items():
-            if not isinstance(obj, types.ModuleType):
-                continue
-            if not hasattr(obj, "__file__"):
-                continue
-            # print "{:<20} :: {}".format(name, obj)
-            # print os.path.dirname(obj.__file__)
-            if r"\testCase\testScript" in os.path.dirname(obj.__file__):
-                testclass = inspect.getmembers(obj, inspect.isclass)
-        if not len(testclass):
-            raise Exception("TestStage not found")
-        for cls in testclass:
-            if cls[0] == "TestStage":
-                return cls[1]()
-
-    @staticmethod
-    def getSharedModule(clsname):
-        for name, obj in globals().items():
-            if not isinstance(obj, types.ModuleType):
-                continue
-            if "..\CommonFiles" not in os.path.dirname(str(obj)):
-                continue
-            # Get Modules import from ..\CommonFildes
-            modules = inspect.getmembers(obj, inspect.ismodule)
-            # iter over all class in modules and get matched classname
-            for m in modules:
-                clses = inspect.getmembers(m[1], inspect.isclass)
-                for cls in clses:
-                    if cls[0] == clsname:
-                        return m[1], cls[1]
-
-    @staticmethod
-    def isTCTest(sharedmd):
-        if hasattr(sharedmd, "sharedTCPjsPath") and getattr(sharedmd, "sharedTCPjsPath", ""):
-            return True
-        return False
-
-
 if __name__ == "__main__":
 
     timerecord = sharedlib.Timer()
@@ -182,8 +108,8 @@ if __name__ == "__main__":
 
     timerecord.OutputTimeLog()
 
-    sharedlib.findLoggerFilehdlr(globals())
     sharedlib.closeHdlr(logger)
+    sharedlib.findLoggerFilehdlr(globals())
 
     os.system("copy {0} {0}bak /y".format(r".\testModel\TimeLog.log"))
     os.system("del {} /s /q".format(r".\testModel\TimeLog.log"))
