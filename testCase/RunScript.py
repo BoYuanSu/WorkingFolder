@@ -22,7 +22,8 @@ from CommonFiles.FEA import fealib
 
 from testScript import testscript
 from testScript import test_25_mkxl
-from testScript import testscript
+from testScript import test_00_teall
+from testScript import test_00_te1by1
 
 
 # For Test Mode Setting(Test or not, 1:Yes, 0:No)
