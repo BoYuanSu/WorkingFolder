@@ -7,7 +7,7 @@ sys.dont_write_bytecode = True
 try:
     from CommonFiles import sharedlib
 except ImportError:
-    sys.path.append("C:\WorkingFolder\CommonFiles")
+    sys.path.append(r".\CommonFiles")
     import sharedlib
 
 logger = sharedlib.Logger(__name__)

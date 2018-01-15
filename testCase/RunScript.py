@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
-import inspect
 import logging
 import os
 import sys
-import types
 
 sys.dont_write_bytecode = True
 

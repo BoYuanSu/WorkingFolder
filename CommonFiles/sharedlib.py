@@ -654,7 +654,7 @@ def Logger(name=__name__, logLV=logging.INFO, pathTestlog=""):
     try:
         file_handler = logging.FileHandler(pathTestlog)
     except IOError:
-        file_handler = logging.FileHandler(r"C:\WorkingFolder\testCase\testModel\TimeLog.log")
+        file_handler = logging.FileHandler(r"TimeLog.log")
     file_handler.setLevel(logLV)
     file_handler.setFormatter(formatter)
 
