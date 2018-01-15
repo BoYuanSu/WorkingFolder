@@ -45,18 +45,18 @@ class ComTestStage:
         # Used for Indentify whether to Check Successful/Failed or not.
         self.isIgnoredTr = False
 
-    def Stage_001_CollectStatsData(self):
+    def Stage_001_LaunchMDX3DI2(self):
         self.mt = "cmd"
         # self.isIgnoredTr = True
-        self.fn = "Collect_Net_Data"
-        self.tlm = 1
-        self.isIgnoredTr = True
+        self.fn = "LaunchMDX3DI2"
+        # self.tlm = 1
+        # self.isIgnoredTr = True
         pass
 
-    def Stage_002_WriteStatsData(self):
-        self.mt = "openpyxl"
+    def Stage_002_CheckOutputFiles(self):
+        self.mt = "CheckOutputFiles"
         # self.isIgnoredTr = True
-        # self.fn = "Write_Stats_Data"
+        self.fn = "CheckOutputFiles"
         pass
 
     def _customStage(self):
@@ -66,10 +66,3 @@ class ComTestStage:
         methods.append(self.Stage_001_CollectStatsData)
         methods.append(self.Stage_002_WriteStatsData)
         return methods
-    # def Stage_000_Setup(self):
-    #     # Not Implemented
-    #     pass
-
-    # def Stage_999_Teardown(self):
-    #     # Not Implemented
-    #     pass

@@ -13,13 +13,16 @@ except WindowsError:
     pass
 sys.path.append("..")
 
-# from CommonFiles import sharedlib
-# from CommonFiles.FEA import fealib
+from CommonFiles import sharedlib
+
+from CommonFiles.FEA import fealib
 # from CommonFiles.SAM import samlib
 # from CommonFiles.TE1by1 import te1by1lib
 # from CommonFiles.TEALL import tealllib
 
-from testScript import *
+from testScript import testscript
+from testScript import test_25_mkxl
+from testScript import testscript
 
 
 # For Test Mode Setting(Test or not, 1:Yes, 0:No)
@@ -43,9 +46,12 @@ def main():
     """
     Doing main test
     """
-    insStages = Run.getStageClass()
+    # insStages = Run.getStageClass()
+    insStages = testscript.TestStage()
 
-    sharedmd, sharedclass = Run.getSharedModule(insStages.sharedClassName)
+    # sharedmd, sharedclass = Run.getSharedModule(insStages.sharedClassName)
+    sharedmd = fealib
+    sharedclass = fealib.FEAInterface
 
     if Run.isTCTest(sharedmd):
         testlauncher = sharedlib.TETestLauncher(sharedmd, sharedclass, insStages)
