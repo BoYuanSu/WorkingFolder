@@ -24,8 +24,18 @@ except ImportError:
 
 cwd = os.getcwd()
 logLV_ = logging.INFO
+"""
+Options List of logging Level
+CRITICAL = 50
+ERROR = 40
+WARNING = 30
+INFO = 20
+DEBUG = 10
+NOTSET = 0
+"""
 # Default TC log path
 logTC = os.path.join(cwd, r".\testModel\TCLog_{0}_{1}.mht")
+# Default Test log path
 logPy = r".\testModel\TimeLog.log"
 
 
@@ -303,7 +313,7 @@ class TETestLauncher(PyTestLauncher):
         logger.info("{0} {1:^25} {0}".format("@" * 20, self._StageName))
         self.syncVMInfo(self._StageName)
         unitName, Routine = self._getSharedMthd
-        logger.info("{0} Call Method: {1}::{2} ...".format("=" * 5, unitName, Routine))
+        logger.info("{0} Call Method: [[{1}::{2}]] ...".format("=" * 5, unitName, Routine))
         argsList = self.insStages.fnargs
         try:
             self.isCallRoutineFail = False
@@ -688,6 +698,10 @@ def getCaseTimeLimit():
 def findLoggerFilehdlr(dictGlobals):
     print "close logger handlers"
     for name, obj in dictGlobals.items():
+        # Close Handler Used by RunScript
+        if isinstance(obj, logging.Logger):
+            closeHdlr(obj)
+            continue
         if not isinstance(obj, types.ModuleType):
             continue
         if "..\CommonFiles" not in os.path.dirname(str(obj)):
@@ -695,8 +709,9 @@ def findLoggerFilehdlr(dictGlobals):
         # print "{:<20} :: {}".format(name, obj)
         modules = inspect.getmembers(obj, inspect.ismodule)
         for m in modules:
-            # print m[0]
+            # Close Handler Used by Common Module imported
             closeHdlr(m[1])
+        # Close Handler Used by RunScript imported
         closeHdlr(obj)
 
     with open(logPy, "a") as log:

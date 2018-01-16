@@ -151,8 +151,9 @@ class TestStage:
         random.shuffle(methods)
         # methods.append(self.Stage_001_CollectStatsData)
         # methods.append(self.Stage_002_WriteStatsData)
-        # methods.append(self.Stage_001_CollectStatsData)
-        # methods.append(self.Stage_002_WriteStatsData)
+        methods = []
+        methods.append(self.Stage_001_CollectStatsData)
+        methods.append(self.Stage_002_WriteStatsData)
         return methods
     # def Stage_000_Setup(self):
     #     # Not Implemented

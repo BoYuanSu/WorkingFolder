@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import logging
 import os
 import sys
 
@@ -25,32 +24,19 @@ sharedmd = samlib
 sharedclass = samlib.Sample
 testlauncher = sharedlib.TETestLauncher(sharedmd, sharedclass, insStages)
 """
-from CommonFiles.FEA import fealib
-# from CommonFiles.SAM import samlib
+# from CommonFiles.FEA import fealib
+from CommonFiles.SAM import samlib
 # from CommonFiles.TE1by1 import te1by1lib
 # from CommonFiles.TEALL import tealllib
 
-from testScript import testscript
-# from testScript import test_25_mkxl
-# from testScript import test_00_teall
+# from testScript import testscript
+from testScript import test_25_mkxl
 # from testScript import test_00_te1by1
+# from testScript import test_00_teall
 
 
 # For Test Mode Setting(Test or not, 1:Yes, 0:No)
 iTestMode = 1
-
-# Setting log level
-logLV = logging.DEBUG
-pathTestlog = r".\testModel\TimeLog.log"
-"""
-Options List of logging Level
-CRITICAL = 50
-ERROR = 40
-WARNING = 30
-INFO = 20
-DEBUG = 10
-NOTSET = 0
-"""
 
 
 def main():
@@ -58,11 +44,17 @@ def main():
     Doing main test
     """
     # insStages = SearchRef.getStageClass(globals())
-    insStages = testscript.TestStage()
+    # insStages = testscript.TestStage()
+    insStages = test_25_mkxl.TestStage()
+    # insStages = test_00_te1by1.TestStage()
+    # insStages = test_00_teall.TestStage()
 
     # sharedmd, sharedclass = SearchRef.getSharedModule(globals(), insStages.sharedClassName)
-    sharedmd = fealib
-    sharedclass = fealib.FEAInterface
+    # sharedmd, sharedclass = fealib, fealib.FEAInterface
+    sharedmd, sharedclass = samlib, samlib.Sample
+    # sharedmd, sharedclass = te1by1lib, te1by1lib.Entrance_
+    # sharedmd, sharedclass = tealllib, tealllib.Entrance
+
 
     if sharedlib.SearchRef.isTCTest(sharedmd):
         testlauncher = sharedlib.TETestLauncher(sharedmd, sharedclass, insStages)
@@ -95,7 +87,7 @@ if __name__ == "__main__":
 
     timerecord = sharedlib.Timer()
 
-    logger = sharedlib.Logger(__name__, logLV=logLV)
+    logger = sharedlib.Logger(__name__)
 
     if iTestMode == 0:
         processes = sharedlib.ProcessSnapShot()
@@ -106,7 +98,6 @@ if __name__ == "__main__":
 
     timerecord.OutputTimeLog()
 
-    sharedlib.closeHdlr(logger)
     sharedlib.findLoggerFilehdlr(globals())
 
     os.system("copy {0} {0}bak /y".format(r".\testModel\TimeLog.log"))
