@@ -11,6 +11,8 @@ import types
 import win32com.client
 # from subprocess import PIPE
 
+sys.dont_write_bytecode = True
+
 # import TestFile_BackUp as backuptool
 try:
     import AccessQAXenDB
@@ -18,7 +20,7 @@ except ImportError:
     pass
 
 
-sys.dont_write_bytecode = True
+
 
 cwd = os.getcwd()
 logLV_ = logging.INFO
@@ -345,7 +347,7 @@ class TETestLauncher(PyTestLauncher):
             return "Call Routine Failed"
         tr = self._wrapCheckTestResult(self.apiTE.getResultStatus)
         logger.info("{0} Test Result: {1} !".format("=" * 5, tr))
-        fmt = logTC.format(getTestListID(), self.itercont + 1)
+        fmt = logTC.format(getTestListID(), self._StageName)
         self.apiTE.exportResultLog(fmt)
         self.reportBugProxy_(tr)
         if tr == "Reach Time Limit of Case":
@@ -403,6 +405,8 @@ class TETestLauncher(PyTestLauncher):
                 if not self.apiTE.IsRunning:
                     break
             tr = self._wrapCheckTestResult(self.apiTE.getResultStatus)
+            fmt = logTC.format(getTestListID(), Routine)
+            self.apiTE.exportResultLog(fmt)
             self.reportBugProxy_(tr)
             logger.info("{0} Test Result: {1} !".format("=" * 5, tr))
             if tr != "Successful":
@@ -669,10 +673,9 @@ def Logger(name=__name__, logLV=logging.INFO, pathTestlog=""):
 def getTestListID():
     try:
         db = AccessQAXenDB.AccessQAXenDB()
-        return db.CurrentTestRecord().id
     except Exception:
-        return
-
+        return AccessQAXenDB.GetFakeTestID()
+    return db.CurrentTestRecord().id
 
 def getCaseTimeLimit():
     try:
@@ -717,8 +720,7 @@ logger = Logger(logLV=logLV_)
 
 
 def main():
-    print type(getTestListID())
-
+    pass
 
 if __name__ == '__main__':
     main()
