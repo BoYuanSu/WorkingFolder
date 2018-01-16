@@ -1,2 +1,2 @@
-cd "C:\WorkingFolder\testCase"
+cd /d "%~dp0"
 python -B RunScript.py

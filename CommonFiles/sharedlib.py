@@ -13,7 +13,7 @@ import win32com.client
 
 sys.dont_write_bytecode = True
 
-# import TestFile_BackUp as backuptool
+import TestFile_BackUp as backuptool
 try:
     import AccessQAXenDB
 except ImportError:
@@ -97,11 +97,11 @@ class PyTestLauncher:
                 logger.info("!!!!! Time Out ...")
                 self.isTimeOut = True
                 break
-            if self.totalTimecont > self.totalTimeLimit:
+            if self.totalTimecont > self.totalTimeLimit and self.totalTimeLimit:
                 self.isReachCaseTimeLimit = True
                 break
             tcont += 1
-            # self.totalTimecont += 1
+            self.totalTimecont += 1
             time.sleep(1)
 
     def checkTestResult(self):
