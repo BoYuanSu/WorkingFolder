@@ -10,3 +10,8 @@ Visualizer
 *.mht
 AccessQAXenDB.py
 FetchXenDB.py
+backuptonet.bat
+Exclusion.txt
+SFT
+REG
+FlowSolverTest

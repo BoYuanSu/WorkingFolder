@@ -317,7 +317,7 @@ class TETestLauncher(PyTestLauncher):
         argsList = self.insStages.fnargs
         try:
             self.isCallRoutineFail = False
-            if argsList:
+            if not argsList:
                 self.apiTE.runRoutine(unitName, Routine)
             else:
                 self.apiTE.runRoutineEx(unitName, Routine, argsList)

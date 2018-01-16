@@ -11,6 +11,7 @@ except WindowsError:
 sys.path.append("..")
 
 from CommonFiles import sharedlib
+from CommonFiles import TestFile_BackUp
 
 """
 import your Module CommonFiles/TestScript here
@@ -104,7 +105,7 @@ if __name__ == "__main__":
     os.system("del {} /s /q".format(r".\testModel\TimeLog.log"))
 
     if iTestMode == 0:
-        TestFile_BackUp
+        # TestFile_BackUp
 
         # Test Finish, kill unused process(*.exe)
         processes.killRedundant()
